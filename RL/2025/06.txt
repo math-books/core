@@ -1,0 +1,303 @@
+PAGE 51
+
+Sec. 1.4    Infinite Horizon Problems - An Overview
+
+Approximate Q-Factor Q̃(x, u)
+
+[Figure 1.4.4 labels]
+At x
+Min Approximation
+First Step
+“Future”
+minᵤ∈U(x) E_w{g(x, u, w) + αJ̃(f(x, u, w))}
+E{·} Approximation
+Optimal Cost Approximation
+Approximation
+Cost-to-Go Approximation
+
+Figure 1.4.4 Approximation in value space with one-step lookahead for infinite horizon problems. There are three potential areas of approximation, which can be considered independently of each other: optimal cost approximation, expected value approximation, and minimization approximation.
+
+…ated on-line policy, as we will discuss later in Section 1.5. On the other hand, solving the multistep lookahead minimization problem, instead of the one-step lookahead counterpart of Eq. (1.36), is more time consuming.
+
+The Three Approximations: Optimal Cost, Expected Value, and Lookahead Minimization Approximations
+
+There are three potential areas of approximation for infinite horizon problems: optimal cost approximation, expected value approximation, and minimization approximation; cf. Fig. 1.4.4. They are similar to their finite horizon counterparts that we discussed in Section 1.3.2. In particular, we have potentially:
+
+(a) A terminal cost approximation J̃ of the optimal cost function J*: A major advantage of the infinite horizon context is that only one approximate cost function J̃ is needed, rather than the N functions J̃₁, …, J̃N of the N-step horizon case.
+
+(b) An approximation of the expected value operation: This operation can be very time consuming. It may be simplified in various ways. For example, some of the random quantities wₖ, wₖ₊₁, …, wₖ₊ℓ₋₁ appearing in the ℓ-step lookahead minimization may be replaced by deterministic quantities; this is another example of the certainty equivalence approach, which we discussed in Section 1.3.2.
+
+(c) A simplification of the minimization operation: For example, in multiagent problems the control consists of multiple components,
+
+u = (u¹, …, uᵐ),
+
+with each component uⁱ chosen by a different agent/decision maker. In this case the size of the control space can be enormous, but it
+
+
+PAGE 52
+
+Exact and Approximate Dynamic Programming    Chap. 1
+
+can be simplified in ways that will be discussed later (e.g., choosing components sequentially, one-agent-at-a-time). This will form the core of our approach to multiagent problems; see Section 1.6.7 and Chapter 2, Section 2.9.
+
+We will next describe briefly various approaches for selecting the terminal cost function approximation.
+
+Constructing Terminal Cost Approximations for On-Line Play
+
+A major issue in value space approximation is the construction of a suitable approximate cost function J̃. This can be done in many different ways, giving rise to some of the principal RL methods.
+
+For example, J̃ may be constructed with sophisticated off-line training methods. Alternatively, the approximate values J̃(x) may be obtained on-line as needed with truncated rollout, by running an off-line obtained policy for a suitably large number of steps, starting from x, and supplementing it with a suitable, perhaps primitive, terminal cost approximation.
+
+For orientation purposes, let us describe briefly four broad types of approximation. We will return to these approaches later, and we also refer to the RL and approximate DP literature for more detailed discussions.
+
+(a) Off-line problem approximation: Here the function J̃ is computed off-line as the optimal or nearly optimal cost function of a simplified optimization problem, which is more convenient for computation. Simplifications may include exploiting decomposable structure, reducing the size of the state space, neglecting some of the constraints, and ignoring various types of uncertainties. For example, we may consider using as J̃ the cost function of a related deterministic problem, obtained through some form of certainty equivalence approximation, thus allowing computation of J̃ by gradient-based optimal control methods or shortest path-type methods.
+
+A major type of problem approximation method is aggregation, described in Section 3.6, and in the books [Ber12], [Ber19a] and papers [Ber18a], [Ber18b]. Aggregation provides a systematic procedure to simplify a given problem. A principal example is to group states together into a relatively small number of subsets, called aggregate states. The optimal cost function of the simpler aggregate problem is computed by exact DP methods, possibly involving the use of simulation. This cost function is then used to provide an approximation J̃ to the optimal cost function J* of the original problem, using some form of interpolation.
+
+(b) On-line simulation: This possibility arises in rollout algorithms for stochastic problems, where we use Monte-Carlo simulation and some suboptimal policy μ (the base policy) to compute (whenever needed) values J̃(x) that are exactly or approximately equal to Jμ(x). The
+
+
+PAGE 53
+
+Sec. 1.4   Infinite Horizon Problems - An Overview
+
+policy μ may be obtained by any method, e.g., one based on heuristic reasoning (such as in the case of the traveling salesman Example 1.2.3), or off-line training based on a more principled approach, such as approximate policy iteration or approximation in policy space.
+
+Note that while simulation is time-consuming, it is uniquely well-suited for the use of parallel computation. Moreover, it can be simplified through the use of certainty equivalence approximations.
+
+(c) On-line approximate optimization. This approach involves the solution of a suitably constructed shorter horizon version of the problem, with a simple terminal cost approximation. It can be viewed as either approximation in value space with multistep lookahead, or as a form of rollout algorithm. It is often used in model predictive control (MPC).
+
+(d) Parametric cost approximation, where J̃ is obtained from a given parametric class of functions J(x, r), where r is a parameter vector, selected by a suitable algorithm. The parametric class typically involves prominent characteristics of x called features, which can be obtained either through insight into the problem at hand, or by using training data and some form of neural network (see Chapter 3).
+
+Such methods include approximate forms of PI, as discussed in Section 1.1 in connection with chess and backgammon. The policy evaluation portion of the PI algorithm can be done by approximating the cost function of the current policy using an approximation architecture such as a neural network (see Chapter 3). It can also be done with stochastic iterative algorithms such as TD(λ), LSPE(λ), and LSTD(λ), which are described in the DP book [Ber12] and the RL book [Ber19a]. These methods are somewhat peripheral to our course, and will not be discussed at any length. We note, however, that approximate PI methods do not just yield a parametric approximate cost function J(x, r), but also a suboptimal policy, which can be improved on-line by using (possibly truncated) rollout.
+
+Aside from approximate PI, parametric approximate cost functions J(x, r) may be obtained off-line with methods such as Q-learning, linear programming, and aggregation methods, which are also discussed in the books [Ber12] and [Ber19a].
+
+Let us also mention that for problems with special structure, J̃ may be chosen so that the one-step lookahead minimization (1.36) is facilitated. In fact, under favorable circumstances, the lookahead minimization may be carried out in closed form. An example is when the system is nonlinear, but the control enters linearly in the system equation and quadratically in the cost function, while the terminal cost approximation is quadratic. Then the one-step lookahead minimization can be carried out analytically, because it involves a function that is quadratic in u.
+
+
+PAGE 54
+
+Exact and Approximate Dynamic Programming    Chap. 1
+
+From Off-Line Training to On-Line Play
+
+Generally off-line training will produce either just a cost approximation (as in the case of TD-Gammon), or just a policy (as, for example, by some approximation in policy space/policy gradient approach), or both (as in the case of AlphaZero). We have already discussed in this section one-step lookahead and multistep lookahead schemes to implement on-line approximation in value space using J̃; cf. Fig. 1.4.3. Let us now consider some additional possibilities, which involve the use of a policy μ that has been obtained off-line (possibly in addition to a terminal cost approximation). Here are some of the main possibilities:
+
+(a) Given a policy μ that has been obtained off-line, we may use as terminal cost approximation J̃ the cost function Jμ of the policy. For the case of one-step lookahead, this requires a policy evaluation operation, and can be done on-line, by computing (possibly by simulation) just the values of
+
+E{Jμ(f(xₖ, uₖ, wₖ))}
+
+that are needed [cf. Eq. (1.36)]. For the case of ℓ-step lookahead, the values
+
+E{Jμ(xₖ₊ℓ)}
+
+for all states xₖ₊ℓ that are reachable in ℓ steps starting from xₖ are needed. This is the simplest form of rollout, and only requires the off-line construction of the policy μ.
+
+(b) Given a terminal cost approximation J̃ that has been obtained off-line, we may use it on-line to compute fast the controls of a corresponding one-step or multistep lookahead policy μ̃ when needed. The policy μ̃ can in turn be used for rollout as in (a) above. In a truncated variation of this scheme, we may also use J̃ to approximate the tail end of the rollout process (an example of this is the rollout-based TD-Gammon algorithm).
+
+(c) Given a policy μ and a terminal cost approximation J̃, we may use them together in a truncated rollout scheme, whereby the tail end of the rollout with μ is approximated using the cost approximation J̃. This is similar to the truncated rollout scheme noted in (b) above, except that the policy μ is computed off-line rather than on-line using J̃ and one-step or multistep lookahead.
+
+The preceding three possibilities are the principal ones for using the results of off-line training within on-line play schemes. Naturally, there are variations where additional information is computed off-line to facilitate and/or expedite the on-line play algorithm. As an example, in MPC, in addition to a terminal cost approximation, a target tube may need to be computed off-line in order to guarantee that some state constraints can
+
+
+PAGE 55
+
+Sec. 1.4   Infinite Horizon Problems - An Overview
+
+be satisfied on-line; see the discussion of MPC in Section 1.6.9. Other examples of this type will be noted in the context of specific applications.
+
+Finally, let us note that while we have emphasized approximation in value space with cost function approximation, our discussion applies to Q-factor approximation, involving functions
+
+Q̃(x, u) ≈ E{g(x, u, w) + αJ*(f(x, u, w))}.
+
+The corresponding one-step lookahead scheme has the form
+
+μ̃(x) ∈ arg minᵤ∈U(x) E{g(x, u, w) + α minᵤ′∈U(f(x,u,w)) Q̃(f(x, u, w), u′)};    (1.37)
+
+cf. Eq. (1.36). The second term on the right in the above equation represents the cost function approximation
+
+J̃(f(x, u, w)) = minᵤ′∈U(f(x,u,w)) Q̃(f(x, u, w), u′).
+
+The use of Q-factors is common in the “model-free” case where a computer simulator is used to generate samples of w, and corresponding values of g and f. Then, having obtained Q̃ through off-line training, the one-step lookahead minimization in Eq. (1.37) must be performed on-line with the use of the simulator.
+
+1.4.3   Understanding Approximation in Value Space
+
+We will now discuss some of our aims as we try to get insight into the process of approximation in value space. Clearly, it makes sense to approximate J* with a function J̃ that is as close as possible to J*. However, we should also try to understand quantitatively the relation between J̃ and Jμ̃, the cost function of the resulting one-step lookahead (or multistep lookahead) policy μ̃. Interesting questions in this regard are the following:
+
+(a) How is the quality of the lookahead policy μ̃ affected by the quality of the off-line training? A related question is how much should we care about improving J̃ through a longer and more sophisticated training process, for a given approximation architecture? A fundamental fact that provides a lot of insight in this respect is that Jμ̃ is the result of a step of Newton’s method that starts at J̃ and is applied to the Bellman Eq. (1.33). This will be the focus of our discussion in the next section, and has been a major point in the narrative of the author’s books, [Ber20a] and [Ber22a].
+
+A related fact is that in approximation in value space with multistep lookahead, Jμ̃ is the result of a step of Newton’s method that starts at the function obtained by applying multiple value iterations to J̃.
+
+
+PAGE 56
+
+Exact and Approximate Dynamic Programming    Chap. 1
+
+(b) How do simplifications in the multistep lookahead implementation affect Jμ̃? The Newton step interpretation of approximation in value space leads to an important insight into the special character of the initial step of the multistep lookahead. In particular, it is only the first step that acts as the Newton step, and needs to be implemented with precision. The subsequent steps are value iterations, which only serve to enhance the quality of the starting point of the Newton step, and hence their precise implementation is not critical.
+
+This idea suggests that simplifications of the lookahead steps after the first can be implemented with relatively small (if any) performance loss for the multistep lookahead policy. Important examples of such simplifications are the use of certainty equivalence (Sections 1.6.9, 2.7.2, 2.8.3), and forms of pruning of the lookahead tree (Section 2.4). In practical terms, simplifications after the first step of the multistep lookahead can save a lot of on-line computation, which can be fruitfully invested in extending the length of the lookahead.
+
+(c) When is μ̃ stable? The question of stability is very important in many control applications where the objective is to keep the state near some reference point or trajectory. Indeed, in such applications, stability is the dominant concern, and optimality is secondary by comparison. Among others, here we are interested to characterize the set of terminal cost approximations J̃ that lead to a stable μ̃.
+
+(d) How does the length of lookahead minimization or the length of the truncated rollout affect the stability and quality of the multistep lookahead policy μ̃? While it is generally true that the length of lookahead has a beneficial effect on quality, it turns out that it also has a beneficial effect on the stability properties of the multistep lookahead policy, and we are interested in the mechanism by which this occurs.
+
+In what follows we will be keeping in mind these questions. In particular, in the next section, we will discuss them in the context of the simple and convenient linear quadratic problem. Our conclusions, however, hold within a far more general context with the aid of the abstract DP formalism; see the author’s books [Ber20a] and [Ber22a] for a broader presentation and analysis, which address these questions in greater detail and generality.
+
+1.5 NEWTON’S METHOD - LINEAR QUADRATIC PROBLEMS
+
+We will now aim to understand the character of the Bellman equation, approximation in value space, and the VI and PI algorithms within the context of an important deterministic problem. This is the classical continuous-spaces problem where the system is linear, with no control constraints, and the cost function is nonnegative quadratic. While this problem can be solved analytically, it provides a uniquely insightful context for understanding visually the Bellman equation and its algorithmic solution, both exactly and approximately.
+
+
+PAGE 57
+
+Sec. 1.5   Newton’s Method - Linear Quadratic Problems
+
+In its general form, the problem deals with the system
+
+xₖ₊₁ = Axₖ + Buₖ,
+
+where xₖ and uₖ are elements of the Euclidean spaces ℝⁿ and ℝᵐ, respectively, A is an n × n matrix, and B is an n × m matrix. It is assumed that there are no control constraints. The cost per stage is quadratic of the form
+
+g(x, u) = x′Qx + u′Ru,
+
+where Q and R are positive definite symmetric matrices of dimensions n × n and m × m, respectively (all finite-dimensional vectors in this work are viewed as column vectors, and a prime denotes transposition). The analysis of this problem is well known and is given with proofs in several control theory texts, including the author’s DP books [Ber17a] and [Ber12].
+
+In what follows, we will focus for simplicity only on the one-dimensional version of the problem, where the system has the form
+
+xₖ₊₁ = axₖ + buₖ;    (1.38)
+
+cf. Example 1.3.1. Here the state xₖ and the control uₖ are scalars, and the coefficients a and b are also scalars, with b ≠ 0. The cost function is undiscounted and has the form
+
+∑ₖ₌₀^∞ (qxₖ² + ruₖ²),    (1.39)
+
+where q and r are positive scalars. The one-dimensional case allows a convenient and insightful analysis of the algorithmic issues that are central for our purposes. This analysis generalizes to multidimensional linear quadratic problems and beyond, but requires a more demanding mathematical treatment.
+
+The Riccati Equation and its Justification
+
+The analytical results for our problem may be obtained by taking the limit in the results derived in the finite horizon Example 1.3.1, as the horizon length tends to infinity. In particular, we can show that the optimal cost function is expected to be quadratic of the form
+
+J*(x) = K* x²,    (1.40)
+
+where the scalar K* solves the equation
+
+K = F(K),    (1.41)
+
+
+PAGE 58
+
+Exact and Approximate Dynamic Programming    Chap. 1
+
+with F defined by
+
+F(K) = (a²rK)/(r + b²K) + q.    (1.42)
+
+This is the limiting form of Eq. (1.19).
+
+Moreover, the optimal policy is linear of the form
+
+μ*(x) = L* x,    (1.43)
+
+where L* is the scalar given by
+
+L* = −abK*/(r + b²K*).    (1.44)
+
+To justify Eqs. (1.41)–(1.44), we show that J* as given by Eq. (1.40), satisfies the Bellman equation
+
+J(x) = minᵤ∈ℝ {qx² + ru² + J(ax + bu)},    (1.45)
+
+and that μ*(x), as given by Eqs. (1.43)–(1.44), attains the minimum above for every x when J = J*. Indeed, for any quadratic cost function J(x) = Kx² with K ≥ 0, the minimization in Bellman’s equation (1.45) is written as
+
+minᵤ∈ℝ {qx² + ru² + K(ax + bu)²}.    (1.46)
+
+Thus it involves minimization of a positive definite quadratic in u and can be done analytically. By setting to 0 the derivative with respect to u of the expression in braces in Eq. (1.46), we obtain
+
+0 = 2ru + 2bK(ax + bu),
+
+so the minimizing control and corresponding policy are given by
+
+μK(x) = LKx,    (1.47)
+
+where
+
+LK = −abK/(r + b²K).    (1.48)
+
+By substituting this control, the minimized expression (1.46) takes the form
+
+(q + rLK² + K(a + bLK)²)x².
+
+After straightforward algebra, using Eq. (1.48) for LK, it can be verified that this expression is written as F(K)x², with F given by Eq. (1.42). Thus when J(x) = Kx², the Bellman equation (1.45) takes the form
+
+Kx² = F(K)x²
+
+
+PAGE 59
+
+Sec. 1.5    Newton’s Method - Linear Quadratic Problems
+
+or equivalently K = F(K) [cf. Eq. (1.41)].
+
+In conclusion, when restricted to quadratic functions J(x) = Kx² with K ≥ 0, the Bellman equation (1.45) is equivalent to the equation
+
+K = F(K) = (a²rK)/(r + b²K) + q.    (1.49)
+
+We refer to this equation as the Riccati equation† and to the function F as the Riccati operator.‡ Moreover, the policy corresponding to K*, as per Eqs. (1.47)–(1.48), attains the minimum in Bellman’s equation, and is given by Eqs. (1.43)–(1.44).
+
+The Riccati equation can be visualized and solved graphically as illustrated in Fig. 1.5.1. As shown in the figure, the quadratic coefficient K* that corresponds to the optimal cost function J*(x) [cf. Eq. (1.40)] is the unique solution of the Riccati equation K = F(K) within the nonnegative real line.
+
+The Riccati Equation for a Stable Linear Policy
+
+We can also characterize the cost function of a policy μ that is linear of the form μ(x) = Lx, and is also stable, in the sense that the scalar L satisfies |a + bL| < 1, so that the corresponding closed-loop system
+
+xₖ₊₁ = (a + bL)xₖ
+
+is stable (its state xₖ converges to 0 as k → ∞). In particular, we can show that its cost function has the form
+
+Jμ(x) = KL x²,
+
+† This is an algebraic form of the Riccati differential equation, which was invented in its one-dimensional form by count Jacopo Riccati in the 1700s, and has played an important role in control theory. It has been studied extensively in its differential and difference matrix versions; see the paper collection by Bittanti, Laub, and Willems [BLW91], which also includes a historical account by Bittanti [Bit91] of Riccati’s remarkable life and accomplishments.
+
+‡ The Riccati operator is a special case of the Bellman operator, denoted by T, which transforms a function J into the right side of Bellman’s equation:
+
+(TJ)(x) = minᵤ∈U(x) E_w{g(x, u, w) + αJ(f(x, u, w))},    for all x.
+
+Thus the Bellman operator T transforms a function J of x into another function TJ also of x. Bellman operators allow a succinct abstract description of the problem’s data, and are fundamental in the theory of abstract DP (see the author’s monographs [Ber22a] and [Ber22b]). We may view the Riccati operator as the restriction of the Bellman operator to the subspace of quadratic functions of x.
+
+
+PAGE 60
+
+Exact and Approximate Dynamic Programming    Chap. 1
+
+[Figure 1.5.1 labels]
+a²r/b² + q
+q
+−r/b²
+0
+45° Line
+K
+K*
+Riccati Operator
+F(K) = (a²rK)/(r + b²K) + q
+State 1
+State 2
+K̄
+
+Figure 1.5.1 Graphical construction of the solutions of the Riccati equation (1.41)–(1.42) for the linear quadratic problem. The optimal cost function is J*(x) = K*x², where the scalar K* solves the fixed point equation K = F(K), with F being the Riccati operator given by
+
+F(K) = (a²rK)/(r + b²K) + q.
+
+Note that F is concave and monotonically increasing in the interval (−r/b², ∞) and “flattens out” as K → ∞, as shown in the figure. The quadratic Riccati equation K = F(K) also has another solution, denoted by K̄, which is negative and therefore of no interest.
+
+where KL solves the equation
+
+K = FL(K),    (1.50)
+
+with FL defined by
+
+FL(K) = (a + bL)²K + q + rL².    (1.51)
+
+This equation is called the Riccati equation for the stable policy μ(x) = Lx. It is illustrated in Fig. 1.5.2, and it is linear, with linear coefficient (a + bL)² that is strictly less than 1. Hence the line that represents the graph of FL intersects the 45-degree line at a unique point, which defines the quadratic cost coefficient KL.
+
+The Riccati equation (1.50)–(1.51) for μ(x) = Lx may be justified by verifying that it is in fact the Bellman equation for μ,
+
+J(x) = (q + rL²)x² + J((a + bL)x),

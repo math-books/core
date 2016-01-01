@@ -1,0 +1,228 @@
+81
+Sec. 1.6 Examples, Reformulations, and Simplifications
+
+(b) Select the states xₖ. The basic guideline here is that xₖ should encompass all the information that is relevant for future optimization, i.e., the information that is known to the controller at time k and can be used with advantage in choosing uₖ. In effect, at time k the state xₖ should separate the past from the future, in the sense that anything that has happened in the past (states, controls, and disturbances from stages prior to stage k) is irrelevant to the choices of future controls as long we know xₖ. Sometimes this is described by saying that the state should have a “Markov property” to express an analogy with states of Markov chains, where (by definition) the conditional probability distribution of future states depends on the past history of the chain only through the present state.
+
+The control and state selection may also have to be refined or specialized in order to enhance the application of known results and algorithms. This includes the choice of a finite or an infinite horizon, and the availability of good base policies or heuristics in the context of rollout.
+
+Note that there may be multiple possibilities for selecting the states, because information may be packaged in several different ways that are equally useful from the point of view of control. It may thus be worth considering alternative ways to choose the states; for example try to use states that minimize the dimensionality of the state space. For a trivial example that illustrates the point, if a quantity xₖ qualifies as state, then (xₖ₋₁, xₖ) also qualifies as state, since (xₖ₋₁, xₖ) contains all the information contained within xₖ that can be useful to the controller when selecting uₖ. However, using (xₖ₋₁, xₖ) in place of xₖ gains nothing in terms of optimal cost while complicating the DP algorithm that would have to be executed over a larger space.
+
+The concept of a sufficient statistic, which refers to a quantity that summarizes all the essential content of the information available to the controller, may be useful in providing alternative descriptions of the state space. An important paradigm is problems involving partial or imperfect state information, where xₖ evolves over time but is not fully accessible for measurement (for example, xₖ may be the position/velocity vector of a moving vehicle, but we may obtain measurements of just the position). If Iₖ is the collection of all measurements and controls up to time k (the information vector), it is correct to use Iₖ as state in a reformulated DP problem that involves perfect state observation. However, a better alternative may be to use as state the conditional probability distribution
+
+Pₖ(xₖ | Iₖ),
+
+called belief state, which (as it turns out) subsumes all the information that is useful for the purposes of choosing a control. On the other hand, the belief state Pₖ(xₖ | Iₖ) is an infinite-dimensional object, whereas Iₖ may be finite dimensional, so the best choice may be problem-dependent.
+
+82
+Exact and Approximate Dynamic Programming    Chap. 1
+
+Still, in either case, the stochastic DP algorithm applies, with the sufficient statistic [whether Iₖ or Pₖ(xₖ | Iₖ)] playing the role of the state.
+
+A Few Words about the Choice of an RL Method
+
+An attractive aspect of the current RL methodology, inherited by the generality of our DP formulation, is that it can address a very broad range of challenging problems, deterministic as well as stochastic, discrete as well as continuous, etc. However, in the practical application of RL one has to contend with limited theoretical guarantees. In particular, several of the RL methods that have been successful in practice have less than solid performance properties, and may not work on a given problem, even one of the type for which they are designed.
+
+This is a reflection of the state of the art in the field: there are no methods that are guaranteed to work for all or even most DP problems. However, there are enough methods to try on a given problem with a reasonable chance of success in the end (after some heuristic and problem-specific tuning). For this reason, it is important to develop insight into the inner workings of various methods, as a means of selecting the proper type of methodology to try on a given problem.†
+
+A related consideration is the context within which a method is applied. In particular, is it a single problem that is being addressed, such as chess that has fixed rules and a fixed initial condition, or is it a family of related problems that must be periodically solved with small variations in its data or its initial conditions? Also, are the problem data fixed or may they change over time as the system is being controlled?
+
+A related consideration is the context within which a method is applied. In particular, is it a single problem that is being addressed, such as chess that has fixed rules and a fixed initial condition, or is it a family of related problems that must be periodically solved with large or small variations in its data or its initial conditions? Also, if the problem data may change, how predictably and how fast do they change?
+
+Generally, convenient but relatively unreliable methods, which can be tuned to the problem at hand, may be tried with a reasonable chance of success if a single problem is addressed. Similarly, RL methods that require extensive tuning of parameters, including ones that involve approximation in policy space and the use of neural networks, may be well suited for a stable problem environment and a single problem solution. However, they are not well suited for problems with a variable environment and/or real-
+
+† Aside from insight and intuition, it is also important to have a foundational understanding of the analytical principles of the field and of the mechanisms underlying the central computational methods. The role of the theory in this respect is to structure mathematically the methodology, guide the art, and delineate the sound from the flawed ideas.
+
+83
+Sec. 1.6 Examples, Reformulations, and Simplifications
+
+time changes of model parameters. For such problems, RL methods based on approximation in value space and on-line play, possibly involving on-line replanning, are much better suited.
+
+Note also that even when on-line replanning is not needed, on-line play may improve substantially the performance of off-line trained policies, so we may wish to use it in conjunction with off-line training. This is due to the Newton step that is implicit in one-step or multistep lookahead minimization, cf. our discussion of the AlphaZero and TD-Gammon architectures in Section 1.1. Of course the computational requirements of an on-line play method may be substantial and have to be taken into account when assessing its suitability for a particular application. In this connection, deterministic problems are better suited than stochastic problems for on-line play. Moreover, methods that are well-suited for parallel computation, and/or involve the use of certainty equivalence approximations are generally better suited for a stochastic control environment.
+
+1.6.2 Problems with a Termination State
+
+Many DP problems of interest involve a termination state, i.e., a state t that is cost-free and absorbing in the sense that for all k,
+
+gₖ(t, uₖ, wₖ) = 0,   fₖ(t, uₖ, wₖ) = t,   for all wₖ and uₖ ∈ Uₖ(t).
+
+Thus the control process essentially terminates upon reaching t, even if this happens before the end of the horizon. One may reach t by choice if a special stopping decision is available, or by means of a random transition from another state. Problems involving games, such as chess, Go, backgammon, and others include a termination state (the end of the game) and have played an important role in the development of the RL methodology.†
+
+Generally, when it is known that an optimal policy will reach the termination state with certainty within at most some given number of stages N, the DP problem can be formulated as an N-stage horizon problem, with a very large termination cost for the nontermination states.‡ The reason is that even if the termination state t is reached at a time k < N, we can extend our stay at t for an additional N − k stages at no additional cost, so the optimal policy will still be optimal, since it will not incur the large termination cost at the end of the horizon.
+
+† Games often involve two players/decision makers, in which case they can be addressed by suitably modified exact or approximate DP algorithms. The DP algorithm that we have discussed in this chapter involves a single decision maker, but can be used to find an optimal policy for one player against a fixed and known policy of the other player.
+‡ When an upper bound on the number of stages to termination is not known, the problem may be formulated as an infinite horizon problem of the stochastic shortest path problem.
+
+84
+Exact and Approximate Dynamic Programming    Chap. 1
+
+Figure 1.6.1 Cost structure of the parking problem. The driver may park at space k = 0, 1, . . . , N − 1 at cost c(k), if the space is free, or continue to the next space k + 1 at no cost. At space N (the garage) the driver must park at cost C.
+
+Example 1.6.1 (Parking)
+
+A driver is looking for inexpensive parking on the way to his destination. The parking area contains N spaces, numbered 0, . . . , N − 1, and a garage following space N − 1. The driver starts at space 0 and traverses the parking spaces sequentially, i.e., from space k he goes next to space k + 1, etc. Each parking space k costs c(k) and is free with probability p(k) independently of whether other parking spaces are free or not. If the driver reaches the last parking space N − 1 and does not park there, he must park at the garage, which costs C. The driver can observe whether a parking space is free only when he reaches it, and then, if it is free, he makes a decision to park in that space or not to park and check the next space. The problem is to find the minimum expected cost parking policy.
+
+We formulate the problem as a DP problem with N stages, corresponding to the parking spaces, and an artificial termination state t that corresponds to having parked; see Fig. 1.6.1. At each stage k = 1, . . . , N − 1, we have three states: the artificial termination state t, and the two states F and F̄, corresponding to space k being free or taken, respectively. At stage 0, we have only two states, F and F̄, and at the final stage there is only one state, the termination state t. The decision/control is to park or continue at state F [there is no choice at states F̄ and state t]. From location k, the termination state t is reached at cost c(k) when a parking decision is made (assuming location k is free). Otherwise, the driver continues to the next state at no cost. At stage N, the driver must park at cost C.
+
+Let us now derive the form of the DP algorithm, denoting:
+Jₖ*(F): The optimal cost-to-go upon arrival at a space k that is free.
+Jₖ*(F̄): The optimal cost-to-go upon arrival at a space k that is taken.
+Jₖ*(t): The cost-to-go of the “parked”/termination state t.
+
+The DP algorithm for k = 0, . . . , N − 1 takes the form
+
+Jₖ*(F) = {
+    min[c(k), p(k + 1)Jₖ₊₁*(F) + (1 − p(k + 1))Jₖ₊₁*(F̄)]  if k < N − 1,
+    min[c(N − 1), C]                                      if k = N − 1.
+}
+
+85
+Sec. 1.6 Examples, Reformulations, and Simplifications
+
+Jₖ*(F̄) = {
+    p(k + 1)Jₖ₊₁*(F) + (1 − p(k + 1))Jₖ₊₁*(F̄)  if k < N − 1,
+    C                                                if k = N − 1,
+}
+
+for the states other than the termination state t, while for t we have
+
+Jₖ*(t) = 0,    k = 1, . . . , N.
+
+The minimization above corresponds to the two choices (park or not park) at the states F that correspond to a free parking space.
+
+While this algorithm is easily executed, it can be written in a simpler and equivalent form. This can be done by introducing the scalars
+
+Ĵₖ = p(k)Jₖ*(F) + (1 − p(k))Jₖ*(F̄),    k = 0, . . . , N − 1,
+
+which can be viewed as the optimal expected cost-to-go upon arriving at space k but before verifying its free or taken status. Indeed, from the preceding DP algorithm, we have
+
+Ĵₙ₋₁ = p(N − 1) min[c(N − 1), C] + (1 − p(N − 1))C,
+
+Ĵₖ = p(k) min[c(k), Ĵₖ₊₁] + (1 − p(k))Ĵₖ₊₁,
+k = 0, . . . , N − 2.
+
+From this algorithm we can also obtain the optimal parking policy:
+
+Park at space k = 0, . . . , N − 1 if it is free and we have c(k) ≤ Ĵₖ₊₁.
+
+This is an example of DP simplification that occurs when the state involves components that are not affected by the choice of control, and will be addressed in the next section.
+
+1.6.3 General Discrete Optimization Problems
+
+Discrete deterministic optimization problems, including challenging combinatorial problems, can be typically formulated as DP problems by breaking down each feasible solution into a sequence of decisions/controls, similar to the scheduling Example 1.2.1, and the traveling salesman Examples 1.2.2 and 1.2.3. This formulation often leads to an intractable exact DP computation because of an exponential explosion of the number of states as time progresses. However, a reformulation to a discrete optimal control problem brings to bear approximate DP methods, such as rollout and others, to be discussed later, which can deal with the exponentially increasing size of the state space.
+
+Let us now extend the ideas of the examples just noted to the general discrete optimization problem:
+
+minimize G(u)
+subject to u ∈ U,                                               (1.61)
+
+86
+Exact and Approximate Dynamic Programming    Chap. 1
+
+Figure 1.6.2 Formulation of a discrete optimization problem as a DP problem with N stages. There is a cost G(u) only at the terminal stage on the arc connecting an N-solution u = (u₀, . . . , uₙ₋₁) upon reaching the terminal state. Note that there is only one incoming arc at each node.
+
+where U is a finite set of feasible solutions and G(u) is a cost function.
+
+We assume that each solution u has N components; i.e., it has the form
+
+u = (u₀, . . . , uₙ₋₁),
+
+where N is a positive integer. We can then view the problem as a sequential decision problem, where the components u₀, . . . , uₙ₋₁ are selected one-at-a-time. A k-tuple (u₀, . . . , uₖ₋₁) consisting of the first k components of a solution is called a k-solution. We associate k-solutions with the kth stage of the finite horizon discrete optimal control problem shown in Fig. 1.6.2. In particular, for k = 1, . . . , N, we view as the states of the kth stage all the k-tuples (u₀, . . . , uₖ₋₁). For stage k = 0, . . . , N − 1, we view uₖ as the control. The initial state is an artificial state denoted s. From this state, by applying u₀, we may move to any “state” (u₀), with u₀ belonging to the set
+
+U₀ = {ũ₀ | there exists a solution of the form (ũ₀, ũ₁, . . . , ũₙ₋₁) ∈ U}.    (1.62)
+
+Thus U₀ is the set of choices of u₀ that are consistent with feasibility.
+
+More generally, from a state (u₀, . . . , uₖ₋₁), we may move to any state of the form (u₀, . . . , uₖ₋₁, uₖ), upon choosing a control uₖ that belongs to the set
+
+Uₖ(u₀, . . . , uₖ₋₁) = {uₖ | for some uₖ₊₁, . . . , ũₙ₋₁ we have
+(u₀, . . . , uₖ₋₁, uₖ, uₖ₊₁, . . . , ũₙ₋₁) ∈ U}.                 (1.63)
+
+These are the choices of uₖ that are consistent with the preceding choices u₀, . . . , uₖ₋₁, and are also consistent with feasibility [we do not exclude the possibility that the set (1.63) is empty].
+
+87
+Sec. 1.6 Examples, Reformulations, and Simplifications
+
+The last stage corresponds to the N-solutions u = (u₀, . . . , uₙ₋₁), and the terminal cost is G(u); see Fig. 1.6.2. All other transitions in this DP problem formulation have cost 0.
+
+Let Jₖ*(u₀, . . . , uₖ₋₁) denote the optimal cost starting from the k-solution (u₀, . . . , uₖ₋₁), i.e., the optimal cost of the problem over solutions whose first k components are constrained to be equal to u₀, . . . , uₖ₋₁. The DP algorithm is described by the equation
+
+Jₖ*(u₀, . . . , uₖ₋₁) = min Jₖ₊₁*(u₀, . . . , uₖ₋₁, uₖ),
+                            uₖ ∈ Uₖ(u₀,...,uₖ₋₁)
+
+with the terminal condition
+
+Jₙ*(u₀, . . . , uₙ₋₁) = G(u₀, . . . , uₙ₋₁).
+
+This algorithm executes backwards in time: starting with the known function Jₙ* = G, we compute Jₙ₋₁*, then Jₙ₋₂*, and so on up to computing J₀*. An optimal solution (u₀*, . . . , uₙ₋₁*) is then constructed by going forward through the algorithm
+
+uₖ* ∈ arg min Jₖ₊₁*(u₀*, . . . , uₖ₋₁*, uₖ),    k = 0, . . . , N − 1,   (1.64)
+          uₖ ∈ Uₖ(u₀*,...,uₖ₋₁*)
+
+where U₀ is given by Eq. (1.62), and Uₖ is given by Eq. (1.63): first compute u₀*, then u₁*, and so on up to uₙ₋₁*; cf. Eq. (1.8).
+
+Of course here the number of states typically grows exponentially with N, but we can use the DP minimization (1.64) as a starting point for approximation methods. For example we may try to use approximation in value space, whereby we replace Jₖ₊₁* with some suboptimal J̃ₖ₊₁ in Eq. (1.64). One possibility is to use as
+
+J̃ₖ₊₁(u₀*, . . . , uₖ₋₁*, uₖ),
+
+the cost generated by a heuristic method that solves the problem suboptimally with the values of the first k + 1 decision components fixed at u₀*, . . . , uₖ₋₁*, uₖ. This is the rollout algorithm, which turns out to be a very simple and effective approach for approximate combinatorial optimization.
+
+Let us finally note that while we have used a general cost function G and constraint set U in our discrete optimization model of this section, in many problems G and/or U may have a special (e.g., additive) structure, which is consistent with a sequential decision making process and may be computationally exploited. The traveling salesman Example 1.2.2 is a case in point, where G consists of the sum of N components (the intercity travel costs), one per stage. Our next example deals with a problem of great current interest.
+
+88
+Exact and Approximate Dynamic Programming    Chap. 1
+
+Figure 1.6.3 Schematic visualization of an LLM problem based on N-grams.
+Labels in figure: Prompt; Current Text Window; Next Word; Next Text Window; xₖ; uₖ; xₖ₊₁.
+
+Example 1.6.2 (A Large Language Model Based on N-Grams)
+
+Let us consider an N-gram model, whereby a text string consisting of N words is transformed into another string of N words by adding a word at the front of the string and deleting the word at the back of the string. We view the text strings as states of a dynamic system affected by the added word choice, which we view as the control. We denote by xₖ the string obtained at time k, and by uₖ the word added at time k. We assume that uₖ is chosen from a given set U(xₖ). Thus we have a controlled dynamic system, which is deterministic and is described by an equation of the form
+
+xₖ₊₁ = f(xₖ, uₖ),
+
+where f specifies the operation of adding uₖ at the front of xₖ and removing the word at the back of xₖ. The initial string x₀ is assumed given.
+
+If we have a cost function G by which to evaluate a text string, we can pose a DP problem with either a finite or an infinite horizon. For example if the string evolution terminates after exactly N steps, we obtain the finite horizon problem of minimizing the function G(xₙ) of the final text string xₙ. In this case, xₙ is obtained after we have a chance to change successively all the words of the initial string x₀, subject to the constraints uₖ ∈ U(xₖ).
+
+Another possibility is to introduce a termination action, whereby addition/deletion of words is optionally stopped at some time and the final text string x is obtained with cost G(x). In such a problem formulation, we may also include an additive stage cost that depends on u. This is an infinite horizon formulation that involves an additional termination state t in the manner of Section 1.6.2.
+
+Note that in both the finite and the infinite horizon formulation of the problem, the initial string x₀ may include a “prompt,” which may be subject to optimization through some kind of “prompt engineering.” Depending on the context, this may include the use of another optimization or heuristic algorithm, perhaps unrelated to DP, which searches for a favorable prompt from within a given set of choices.
+
+Interesting policies for the preceding problem formulation may be provided by a neural network, such as a Generative Pre-trained Transformer (GPT). In our terms, the GPT can be viewed simply as a policy that generates next words. This policy may be either deterministic, i.e., uₖ = μ(xₖ) for some function μ, or it may be a “randomized” policy, which generates uₖ according to a probability distribution that depends on xₖ. Our DP formulation can also form the basis for policy improvement algorithms such as rollout, which aim to improve the quality of the output generated by the GPT. Another, more ambitious, possibility is to consider an approximate,
+
+89
+Sec. 1.6 Examples, Reformulations, and Simplifications
+
+neural network-based, policy iteration/self-training scheme, such as the ones discussed earlier, based on the AlphaZero/TD-Gammon architecture. Such a scheme generates a sequence of GPTs, with each GPT trained with data provided by the preceding GPT, a form of self-learning in the spirit of the AlphaZero and TD-Gammon policy iteration algorithms, cf. Section 1.1.
+
+It is also possible to provide an infinite horizon formulation of the general discrete optimization problem
+
+minimize G(u)
+subject to u ∈ U,                                               (1.65)
+
+where U is a finite set of feasible solutions, G(u) is a cost function, and u consists of N components, u = (u₀, . . . , uₙ₋₁); cf. Eq. (1.61). To this end, we introduce a termination state t that the system enters after N steps. At step k, the component uₖ is selected subject to uₖ ∈ Uₖ(u₀, . . . , uₖ₋₁), where the constraint set Uₖ(u₀, . . . , uₖ₋₁) is given by Eq. (1.63). This is a special case of a general finite to infinite horizon stochastic DP problem reformulation, which we describe in the next section.
+
+1.6.4 General Finite to Infinite Horizon Reformulation
+
+There is a conceptually important reformulation that transforms a finite horizon problem, possibly involving a nonstationary system and cost per stage, to an equivalent infinite horizon problem. It is based on introducing an expanded state space, which is the union of the state spaces of the finite horizon problem plus an artificial cost-free termination state that the system moves into at the end of the horizon. This reformulation is of great conceptual value, as it provides a mechanism to bring to bear ideas that can be most conveniently understood within an infinite horizon context. For example, it helps to understand the synergy of off-line training and on-line play based on Newton’s method, and the related insights that explain the good performance of rollout algorithms in practice.
+
+To define the reformulation, let us consider the N-stage horizon stochastic problem of Section 1.3.1, whose system has the form
+
+xₖ₊₁ = fₖ(xₖ, uₖ, wₖ),   k = 0, . . . , N − 1,               (1.66)
+
+and let us denote by Xₖ, k = 0, . . . , N, and Uₖ, k = 0, . . . , N − 1, the corresponding state spaces and control spaces, respectively. We introduce an artificial termination state t, and we consider an infinite horizon problem with state and control spaces X and U given by
+
+X = (∪ₖ₌₀ᴺ Xₖ) ∪ {t},       U = ∪ₖ₌₀ᴺ⁻¹ Uₖ;                 (1.67)
+
+see Fig. 1.6.4.
+
+90
+Exact and Approximate Dynamic Programming    Chap. 1
+
+Figure 1.6.4 Illustration of the infinite horizon equivalent of a finite horizon problem. The state space is X = (∪ₖ₌₀ᴺ Xₖ) ∪ {t}, and the control space is U = ∪ₖ₌₀ᴺ⁻¹ Uₖ. Transitions from states xₖ ∈ Xₖ lead to states in xₖ₊₁ ∈ Xₖ₊₁ according to the system equation xₖ₊₁ = fₖ(xₖ, uₖ, wₖ), and they are stochastic when they involve the random disturbance wₖ. The transition from states xₙ ∈ Xₙ lead deterministically to the termination state at cost gₙ(xₙ). The termination state t is cost-free and absorbing.
+
+The infinite horizon optimal cost J*(xₖ) and optimal policy μ*(xₖ) at state xₖ ∈ Xₖ of the infinite horizon problem are equal to optimal cost-to-go Jₖ*(xₖ) and optimal policy μₖ*(xₖ) of the finite horizon problem.
+
+The system equation and the control constraints of this problem are also reformulated so that states in Xₖ, k = 0, . . . , N − 1, are mapped to states in Xₖ₊₁, according to Eq. (1.66), while states xₙ ∈ Xₙ are mapped to the termination state t at cost gₙ(xₙ). Upon reaching t, the state stays at t at no cost. Thus the policies of the infinite horizon problem map states xₖ ∈ Xₖ to controls in Uₖ(xₖ) ⊂ Uₖ, and consist of functions μₖ(xₖ) that are policies of the finite horizon problem. Moreover, the Bellman equation for the infinite horizon problem is identical to the DP algorithm for the finite horizon problem.
+
+It can be seen that the optimal cost and optimal control, J*(xₖ) and μ*(xₖ), at a state xₖ ∈ Xₖ in the infinite horizon problem are equal to the optimal cost-to-go Jₖ*(xₖ) and optimal control μₖ*(xₖ) of the original finite

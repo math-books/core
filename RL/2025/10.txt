@@ -1,0 +1,252 @@
+91
+Sec. 1.6 Examples, Reformulations, and Simplifications
+
+horizon problem, respectively; cf. Fig. 1.6.4. Moreover approximation in value space and rollout in the finite horizon problem translate to infinite horizon counterparts, and can be understood as Newton steps for solving the Bellman equation of the infinite horizon problem (or equivalently the DP algorithm of the finite horizon problem).
+
+In summary, finite horizon problems can be viewed as infinite horizon problems with a special structure that involves a termination state t, and the state and control spaces of Eq. (1.67), as illustrated in Fig. 1.6.4. The Bellman equation of the infinite horizon problem coincides with the DP algorithm of the finite horizon problem. The PI algorithm for the infinite horizon problem can be translated directly to a PI algorithm for the finite horizon problem, involving repeated policy evaluations and policy improvements. Finally, the Newton step interpretations for approximation in value space and rollout schemes for the infinite horizon problem have straightforward analogs for finite horizon problems, and explain the powerful cost improvement mechanism that underlies the rollout algorithm and its variations.
+
+1.6.5 State Augmentation, Time Delays, Forecasts, and Uncontrollable State Components
+
+In practice, we are often faced with situations where some of the assumptions of our stochastic optimal control problem formulation are violated. For example, the disturbances may involve a complex probabilistic description that may create correlations that extend across stages, or the system equation may include dependences on controls applied in earlier stages, which affect the state with some delay.
+
+Generally, in such cases the problem can be reformulated into our DP problem format through a technique, which is called state augmentation because it typically involves the enlargement of the state space. The general intuitive guideline in state augmentation is to include in the enlarged state at time k all the information that is known to the controller at time k and can be used with advantage in selecting uₖ. State augmentation allows the treatment of time delays in the effects of control on future states, correlated disturbances, forecasts of probability distributions of future disturbances, and many other complications. We note, however, that state augmentation often comes at a price: the reformulated problem may have a very complex state space. We provide some examples.
+
+Time Delays
+
+In some applications the system state xₖ₊₁ depends not only on the preceding state xₖ and control uₖ, but also on earlier states and controls. Such situations can be handled by expanding the state to include an appropriate number of earlier states and controls.
+
+92
+Exact and Approximate Dynamic Programming    Chap. 1
+
+As an example, assume that there is at most a single stage delay in the state and control; i.e., the system equation has the form
+
+xₖ₊₁ = fₖ(xₖ, xₖ₋₁, uₖ, uₖ₋₁, wₖ),    k = 1, . . . , N − 1,    (1.68)
+
+x₁ = f₀(x₀, u₀, w₀).
+
+If we introduce additional state variables yₖ and zₖ, and we make the identifications yₖ = xₖ₋₁, zₖ = uₖ₋₁, the system equation (1.68) yields
+
+(xₖ₊₁, yₖ₊₁, zₖ₊₁) = (fₖ(xₖ, yₖ, uₖ, zₖ, wₖ), xₖ, uₖ).    (1.69)
+
+By defining x̃ₖ = (xₖ, yₖ, zₖ) as the new state, we have
+
+x̃ₖ₊₁ = f̃ₖ(x̃ₖ, uₖ, wₖ),
+
+where the system function f̃ₖ is defined from Eq. (1.69).
+
+By using the preceding equation as the system equation and by expressing the cost function in terms of the new state, the problem is reduced to a problem without time delays. Naturally, the control uₖ should now depend on the new state x̃ₖ, or equivalently a policy should consist of functions μₖ of the current state xₖ, as well as the preceding state xₖ₋₁ and the preceding control uₖ₋₁.
+
+When the DP algorithm for the reformulated problem is translated in terms of the variables of the original problem, it takes the form
+
+Jₙ*(xₙ) = gₙ(xₙ),
+
+Jₙ₋₁*(xₙ₋₁, xₙ₋₂, uₙ₋₂)
+= min E_{wₙ₋₁}{gₙ₋₁(xₙ₋₁, uₙ₋₁, wₙ₋₁)
+  + Jₙ*(fₙ₋₁(xₙ₋₁, xₙ₋₂, uₙ₋₁, uₙ₋₂, wₙ₋₁), xₙ₋₁, uₙ₋₁)},
+
+Jₖ*(xₖ, xₖ₋₁, uₖ₋₁)
+= min E_{wₖ}{gₖ(xₖ, uₖ, wₖ)
+  + Jₖ₊₁*(fₖ(xₖ, xₖ₋₁, uₖ, uₖ₋₁, wₖ), xₖ, uₖ)},
+  k = 1, . . . , N − 2,
+
+J₀*(x₀) = min E_{w₀}{g₀(x₀, u₀, w₀) + J₁*(f₀(x₀, u₀, w₀), x₀, u₀)}.
+
+Similar reformulations are possible when time delays appear in the cost or the control constraints; for example, in the case where the cost is
+
+E{gₙ(xₙ, xₙ₋₁) + g₀(x₀, u₀, w₀) + ∑ₖ₌₁ᴺ⁻¹ gₖ(xₖ, xₖ₋₁, uₖ, wₖ)}.
+
+93
+Sec. 1.6 Examples, Reformulations, and Simplifications
+
+The extreme case of time delays in the cost arises in the nonadditive form
+
+E gₙ(xₙ, xₙ₋₁, . . . , x₀, uₙ₋₁, . . . , u₀, wₙ₋₁, . . . , w₀).
+
+Then, the problem can be reduced to the standard problem format, by using as augmented state
+
+x̃ₖ = (xₖ, xₖ₋₁, . . . , x₀, uₖ₋₁, . . . , u₀, wₖ₋₁, . . . , w₀)
+
+and E gₙ(x̃ₙ) as reformulated cost. Policies consist of functions μₖ of the present and past states xₖ, . . . , x₀, the past controls uₖ₋₁, . . . , u₀, and the past disturbances wₖ₋₁, . . . , w₀. Naturally, we must assume that the past disturbances are known to the controller. Otherwise, we are faced with a problem where the state is imprecisely known to the controller, which will be discussed in the next section.
+
+Forecasts
+
+Consider a situation where at time k the controller has access to a forecast yₖ that results in a reassessment of the probability distribution of the subsequent disturbance wₖ and, possibly, future disturbances. For example, yₖ may be an exact prediction of wₖ or an exact prediction that the probability distribution of wₖ is a specific one out of a finite collection of distributions. Forecasts of interest in practice are, for example, probabilistic predictions on the state of the weather, the interest rate for money, and the demand for inventory. Generally, forecasts can be handled by introducing additional state variables corresponding to the information that the forecasts provide. We will illustrate the process with a simple example.
+
+Assume that at the beginning of each stage k, the controller receives an accurate prediction that the next disturbance wₖ will be selected according to a particular probability distribution out of a given collection of distributions {P₁, . . . , Pₘ}; i.e., if the forecast is i, then wₖ is selected according to Pᵢ. The a priori probability that the forecast will be i is denoted by pᵢ and is given.
+
+The forecasting process can be represented by means of the equation
+
+yₖ₊₁ = ξₖ,
+
+where yₖ₊₁ can take the values 1, . . . , m, corresponding to the m possible forecasts, and ξₖ is a random variable taking the value i with probability pᵢ. The interpretation here is that when ξₖ takes the value i, then wₖ₊₁ will occur according to the distribution Pᵢ.
+
+By combining the system equation with the forecast equation yₖ₊₁ = ξₖ, we obtain an augmented system given by
+
+(xₖ₊₁, yₖ₊₁) = (fₖ(xₖ, uₖ, wₖ), ξₖ).
+
+94
+Exact and Approximate Dynamic Programming    Chap. 1
+
+The new state and disturbance are
+
+x̃ₖ = (xₖ, yₖ),    w̃ₖ = (wₖ, ξₖ).
+
+The probability distribution of w̃ₖ is determined by the distributions Pᵢ and the probabilities pᵢ, and depends explicitly on x̃ₖ (via yₖ) but not on the prior disturbances.
+
+Thus, by suitable reformulation of the cost, the problem can be cast as a stochastic DP problem. Note that the control applied depends on both the current state and the current forecast. The DP algorithm takes the form
+
+Jₙ*(xₙ, yₙ) = gₙ(xₙ),
+
+Jₖ*(xₖ, yₖ) = min E_{wₖ}{gₖ(xₖ, uₖ, wₖ)
+  + ∑ᵢ₌₁ᵐ pᵢ Jₖ₊₁*(fₖ(xₖ, uₖ, wₖ), i)},
+  uₖ ∈ Uₖ(xₖ)                                      (1.70)
+
+where yₖ may take the values 1, . . . , m, and the expectation over wₖ is taken with respect to the distribution Pᵧₖ.
+
+Note that the preceding formulation admits several extensions. One example is the case where forecasts can be influenced by the control action (e.g., pay extra for a more accurate forecast), and may involve several future disturbances. However, the price for these extensions is increased complexity of the corresponding DP algorithm.
+
+Problems with Uncontrollable State Components
+
+In many problems of interest the natural state of the problem consists of several components, some of which cannot be affected by the choice of control. In such cases the DP algorithm can be simplified considerably, and be executed over the controllable components of the state.
+
+As an example, let the state of the system be a composite (xₖ, yₖ) of two components xₖ and yₖ. The evolution of the main component, xₖ, is affected by the control uₖ according to the equation
+
+xₖ₊₁ = fₖ(xₖ, yₖ, uₖ, wₖ),
+
+where the distribution Pₖ(wₖ | xₖ, yₖ, uₖ) is given. The evolution of the other component, yₖ, is governed by a given conditional distribution Pₖ(yₖ | xₖ) and cannot be affected by the control, except indirectly through xₖ. One is tempted to view yₖ as a disturbance, but there is a difference: yₖ is observed by the controller before applying uₖ, while wₖ occurs after uₖ is applied, and indeed wₖ may probabilistically depend on uₖ.
+
+95
+Sec. 1.6 Examples, Reformulations, and Simplifications
+
+It turns out that we can formulate a DP algorithm that is executed over the controllable component of the state, with the dependence on the uncontrollable component being “averaged out” (see also the parking Example 1.6.1). In particular, let Jₖ*(xₖ, yₖ) denote the optimal cost-to-go at stage k and state (xₖ, yₖ), and define
+
+Ĵₖ(xₖ) = E_{yₖ}{Jₖ*(xₖ, yₖ) | xₖ}.
+
+Note that the preceding expression can be interpreted as an “average cost-to-go” at xₖ (averaged over the values of the uncontrollable component yₖ). Then, similar to the parking Example 1.6.1, a DP algorithm that generates Ĵₖ(xₖ) can be obtained, and has the following form:
+
+Ĵₖ(xₖ) = E_{yₖ}{ min E_{wₖ}[gₖ(xₖ, yₖ, uₖ, wₖ)
+  + Ĵₖ₊₁(fₖ(xₖ, yₖ, uₖ, wₖ)) | xₖ, yₖ, uₖ] },
+  uₖ ∈ Uₖ(xₖ,yₖ)                                      (1.71)
+
+This is a consequence of the calculation
+
+Ĵₖ(xₖ) = E_{yₖ}{Jₖ*(xₖ, yₖ) | xₖ}
+= E_{yₖ}{ min E_{wₖ,xₖ₊₁,yₖ₊₁}[gₖ(xₖ, yₖ, uₖ, wₖ)
+  + Jₖ₊₁*(xₖ₊₁, yₖ₊₁) | xₖ, yₖ, uₖ] | xₖ}
+= E_{yₖ}{ min E_{wₖ,xₖ₊₁}[gₖ(xₖ, yₖ, uₖ, wₖ)
+  + E_{yₖ₊₁}{Jₖ₊₁*(xₖ₊₁, yₖ₊₁) | xₖ₊₁} | xₖ, yₖ, uₖ] | xₖ}.
+
+Note that the minimization in the right-hand side of the preceding equation must still be performed for all values of the full state (xₖ, yₖ) in order to yield an optimal control law as a function of (xₖ, yₖ). Nonetheless, the equivalent DP algorithm (1.71) has the advantage that it is executed over a significantly reduced state space. Later, when we consider approximation in value space, we will find that it is often more convenient to approximate Ĵₖ(xₖ) than to approximate Jₖ*(xₖ, yₖ); see the following discussions of forecasts and of the game of tetris.
+
+As an example, consider the augmented state resulting from the incorporation of forecasts, as described earlier. Then, the forecast yₖ represents an uncontrolled state component, so that the DP algorithm can be simplified as in Eq. (1.71). In particular, assume that the forecast yₖ can take values i = 1, . . . , m with probability pᵢ. Then, by defining
+
+Ĵₖ(xₖ) = ∑ᵢ₌₁ᵐ pᵢ Jₖ*(xₖ, i),    k = 0, 1, . . . , N − 1,
+
+96
+Exact and Approximate Dynamic Programming    Chap. 1
+
+Figure 1.6.5 Illustration of a tetris board.
+
+and Ĵₙ(xₙ) = gₙ(xₙ), we have, using Eq. (1.70),
+
+Ĵₖ(xₖ) = ∑ᵢ₌₁ᵐ pᵢ min E_{wₖ}{gₖ(xₖ, uₖ, wₖ)
+  + Ĵₖ₊₁(fₖ(xₖ, uₖ, wₖ)) | yₖ = i},
+  uₖ ∈ Uₖ(xₖ)
+
+which is executed over the space of xₖ rather than xₖ and yₖ. Note that this is a simpler algorithm to approximate than the one of Eq. (1.70).
+
+Uncontrollable state components often occur in arrival systems, such as queueing, where action must be taken in response to a random event (such as a customer arrival) that cannot be influenced by the choice of control. Then the state of the arrival system must be augmented to include the random event, but the DP algorithm can be executed over a smaller space, as per Eq. (1.71). Here is an example of this type.
+
+Example 1.6.3 (Tetris)
+
+Tetris is a popular video game played on a two-dimensional grid. Each square in the grid can be full or empty, making up a “wall of bricks” with “holes” and a “jagged top” (see Fig. 1.6.5). The squares fill up as blocks of different shapes fall from the top of the grid and are added to the top of the wall. As a given block falls, the player can move horizontally and rotate the block in all possible ways, subject to the constraints imposed by the sides of the grid and the top of the wall. The falling blocks are generated independently according to some probability distribution, defined over a finite set of standard shapes. The game starts with an empty grid and ends when a square in the top row becomes full and the top of the wall reaches the top of the grid. When a row of full squares is created, this row is removed, the bricks lying above this row move one row downward, and the player scores a point. The player’s objective is to maximize the score attained (total number of rows removed) up to termination of the game, whichever occurs first.
+
+97
+Sec. 1.6 Examples, Reformulations, and Simplifications
+
+We can model the problem of finding an optimal tetris playing strategy as a finite horizon stochastic DP problem, with very long horizon. The state consists of two components:
+(1) The board position, i.e., a binary description of the full/empty status of each square, denoted by x.
+(2) The shape of the current falling block, denoted by y.
+
+The control, denoted by u, is the horizontal positioning and rotation applied to the falling block. There is also an additional termination state which is cost-free. Once the state reaches the termination state, it stays there with no change in score. Moreover there is a very large amount added to the score when the end of the horizon is reached without the game having terminated.
+
+The shape y is generated according to a probability distribution p(y), independently of the control, so it can be viewed as an uncontrollable state component. The DP algorithm (1.71) is executed over the space of board positions x and has the intuitive form
+
+Ĵₖ(x) = ∑ᵧ p(y) maxᵤ [g(x, y, u) + Ĵₖ₊₁(f(x, y, u))], for all x,    (1.72)
+
+where
+g(x, y, u) is the number of points scored (rows removed),
+f(x, y, u) is the next board position (or termination state),
+when the state is (x, y) and control u is applied, respectively. The DP algorithm (1.72) assumes a finite horizon formulation of the problem.
+
+Alternatively, we may consider an undiscounted infinite horizon formulation, involving a termination state (i.e., a stochastic shortest path problem). The “reduced” form of Bellman’s equation, which corresponds to the DP algorithm (1.72), has the form
+
+Ĵ(x) = ∑ᵧ p(y) maxᵤ [g(x, y, u) + Ĵ(f(x, y, u))], for all x.
+
+The value Ĵ(x) can be interpreted as an “average score” at x (averaged over the values of the uncontrollable block shapes y).
+
+Finally, let us note that despite the simplification achieved by eliminating the uncontrollable portion of the state, the number of states x is still enormous, and the problem can only be addressed by suboptimal methods.†
+
+† Tetris is widely considered to be an interesting and challenging stochastic testbed for RL algorithms, and has received a lot of attention over a period spanning 20 years (1995–2015), starting with the paper [TsV96], the subsequent paper [BeI96] and the neuro-dynamic programming book [BeT96], and ending with the papers [GGS13], [SGG15], which contain many references to related works in the intervening years. All of these works are based on approximation in value space and various forms of approximate policy iteration.
+
+98
+Exact and Approximate Dynamic Programming    Chap. 1
+
+1.6.6 Partial State Information and Belief States
+
+We have assumed so far that the controller has access to the exact value of the current state xₖ, so a policy consists of a sequence of functions of xₖ. However, in many practical settings, this assumption is unrealistic because some components of the state may be inaccessible for observation, the sensors used for measuring them may be inaccurate, or the cost of measuring them more accurately may be prohibitive.
+
+Often in such situations, the controller has access to only some of the components of the current state, and the corresponding observations may also be corrupted by stochastic uncertainty. For example in three-dimensional motion problems, the state may consist of the six-tuple of position and velocity components, but the observations may consist of noise-corrupted radar measurements of the three position components. This gives rise to problems of partial or imperfect state information, which have received a lot of attention in the optimization and AI literature (see e.g., [Ber17a], [RuN16]; these problems are also popularly referred to with the acronym POMDP for partially observed Markovian Decision problem).
+
+Generally, solving a POMDP exactly is typically intractable, even though there are DP algorithms for doing so. Thus in practice, POMDP are solved approximately, except under very special circumstances.
+
+Despite their inherent computational difficulty, it turns out that conceptually, partial state information problems are no different than the perfect state information problems we have been addressing so far. In fact by various reformulations, we can reduce a partial state information problem to one with perfect state information, which involves a different and more complicated state, called a sufficient statistic. Once this is done, we can state an exact DP algorithm that is defined over the space of the sufficient statistic. Roughly speaking, a sufficient statistic is a quantity that summarizes the content of the information available up to k for the purposes of optimal control. This statement can be made more precise, but we will not elaborate further in this book; see e.g., the DP textbook [Ber17a].
+
+A common sufficient statistic is the belief state, which we will denote by bₖ. It is the probability distribution of xₖ given all the observations that have been obtained by the controller and all the controls applied by the controller up to time k, and it can serve as “state” in an appropriate DP algorithm. The belief state can in principle be computed and updated by a variety of methods that are based on Bayes’ rule, such as Kalman filtering (see e.g., [AnM79], [KuV86], [Kri16], [ChC17]) and particle filtering (see e.g., [GSS93], [DoJ09], [Can16], [Kri16]).
+
+Example 1.6.4 (Bidirectional Parking)
+
+Let us consider a more complex version of the parking problem of Example 1.6.1. As in that example, a driver is looking for inexpensive parking on the
+
+99
+Sec. 1.6 Examples, Reformulations, and Simplifications
+
+Figure 1.6.6 Cost structure and transitions of the bidirectional parking problem. The driver may park at space k = 0, 1, . . . , N − 1 at cost c(k), if the space is free, can move to k − 1 at cost tₖ⁻ or can move to k + 1 at cost tₖ⁺. At space N (the garage) the driver must park at cost C.
+
+way to his destination, along a line of N parking spaces with a garage at the end. The difference is that the driver can move in either direction, rather than just forward towards the garage. In particular, at space i, the driver can park at cost c(i) if i is free, can move to i − 1 at a cost tᵢ⁻ or can move to i + 1 at a cost tᵢ⁺. Moreover, the driver records and remembers the free/taken status of the spaces previously visited and may return to any of these spaces; see Fig. 1.6.6.
+
+We assume that the probability p(i) of a space i being free changes over time, i.e., a space found free (or taken) at a given visit may get taken (or become free, respectively) by the time of the next visit. The initial probabilities p(i), before visiting any spaces, are known, and the mechanism by which these probabilities change over time is also known to the driver. As an example, we may assume that at each time stage, p(i) increases by a certain known factor with some probability ξ and decreases by another known factor with the complementary probability 1 − ξ.
+
+Here the belief state is the vector of current probabilities
+
+(p(0), . . . , p(N − 1)),
+
+and it can be updated with a simple algorithm at each time based on the new observation: the free/taken status of the space visited at that time.
+
+We can use the belief state as the basis of an exact DP algorithm for computing an optimal policy. This algorithm is typically intractable computationally, but it is conceptually useful, and it can form the starting point for approximations. It has the form
+
+Jₖ*(bₖ) = minᵤₖ∈Uₖ [ĝₖ(bₖ, uₖ) + E_{zₖ₊₁}{Jₖ₊₁*(Fₖ(bₖ, uₖ, zₖ₊₁)) | bₖ, uₖ}],    (1.73)
+
+where:
+Jₖ*(bₖ) denotes the optimal cost-to-go starting from belief state bₖ at stage k.
+
+100
+Exact and Approximate Dynamic Programming    Chap. 1
+
+Figure 1.6.7 Schematic illustration of the view of an imperfect state information problem as one of perfect state information, whose state is the belief state bₖ, i.e., the conditional probability distribution of xₖ given all the observations up to time k. The observation zₖ₊₁ plays the role of the stochastic disturbance. The function Fₖ is a sequential estimator that updates the current belief state bₖ.
+
+Uₖ is the control constraint set at time k (since the state xₖ is unknown at stage k, Uₖ must be independent of xₖ).
+
+ĝₖ(bₖ, uₖ) denotes the expected stage cost of stage k. It is calculated as the expected value of the stage cost gₖ(xₖ, uₖ, wₖ), with the joint distribution of (xₖ, wₖ) determined by the belief state bₖ and the distribution of wₖ.
+
+Fₖ(bₖ, uₖ, zₖ₊₁) denotes the belief state at the next stage, given that the current belief state is bₖ, control uₖ is applied, and observation zₖ₊₁ is received following the application of uₖ:
+
+bₖ₊₁ = Fₖ(bₖ, uₖ, zₖ₊₁).    (1.74)
+
+This is the system equation for a perfect state information problem with state bₖ, control uₖ, “disturbance” zₖ₊₁, and cost per stage ĝₖ(bₖ, uₖ). The function Fₖ is viewed as a sequential belief estimator, which updates the current belief state bₖ based on the new observation zₖ₊₁. It is given by either an explicit formula or an algorithm (such as Kalman filtering or particle filtering) that is based on the probability distribution of zₖ and the use of Bayes’ rule.
+
+The expected value E_{zₖ₊₁}{· | bₖ, uₖ} is taken with respect to the distribution of zₖ₊₁, given bₖ and uₖ. Note that zₖ₊₁ is random, and its distribution depends on xₖ and uₖ, so the expected value
+
+E_{zₖ₊₁}{Jₖ₊₁*(Fₖ(bₖ, uₖ, zₖ₊₁)) | bₖ, uₖ}
+
+in Eq. (1.73) is a function of bₖ and uₖ.

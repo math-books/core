@@ -1,0 +1,248 @@
+PAGE 1
+
+1
+
+Exact and Approximate Dynamic
+Programming
+
+Contents
+
+1.1. AlphaZero, Off-Line Training, and On-Line Play . . . . p. 4
+1.2. Deterministic Dynamic Programming . . . . . . . . . p. 10
+  1.2.1. Finite Horizon Problem Formulation . . . . . . . p. 10
+  1.2.2. The Dynamic Programming Algorithm . . . . . . . p. 14
+  1.2.3. Approximation in Value Space and Rollout . . . . p. 22
+1.3. Stochastic Exact and Approximate Dynamic Programming p. 28
+  1.3.1. Finite Horizon Problems . . . . . . . . . . . . p. 28
+  1.3.2. Approximation in Value Space for Stochastic DP . p. 34
+  1.3.3. Approximation in Policy Space . . . . . . . . . p. 38
+  1.3.4. Training of Cost Function and Policy
+         Approximations . . . . . . . . . . . . . . . . p. 41
+1.4. Infinite Horizon Problems - An Overview . . . . . . p. 42
+  1.4.1. Infinite Horizon Methodology . . . . . . . . . . p. 46
+  1.4.2. Approximation in Value Space - Infinite Horizon . p. 49
+  1.4.3. Understanding Approximation in Value Space . . . p. 55
+1.5. Newton’s Method - Linear Quadratic Problems . . . . p. 56
+  1.5.1. Visualizing Approximation in Value Space - Region of
+         Stability . . . . . . . . . . . . . . . . . . p. 62
+  1.5.2. Rollout and Policy Iteration . . . . . . . . . . p. 70
+  1.5.3. Local and Global Error Bounds for Approximation in
+         Value Space . . . . . . . . . . . . . . . . p. 74
+  1.5.4. How Approximation in Value Space Can Fail and
+         What to Do About It . . . . . . . . . . . . . p. 78
+
+1
+
+
+PAGE 2
+
+2                 Exact and Approximate Dynamic Programming         Chap. 1
+
+1.6. Examples, Reformulations, and Simplifications . . . . . p. 79
+  1.6.1. A Few Words About Modeling . . . . . . . . . . p. 79
+  1.6.2. Problems with a Termination State . . . . . . . p. 83
+  1.6.3. General Discrete Optimization Problems . . . . . p. 85
+  1.6.4. General Finite to Infinite Horizon Reformulation . p. 89
+  1.6.5. State Augmentation, Time Delays, Forecasts, and
+         Uncontrollable State Components . . . . . . . . p. 91
+  1.6.6. Partial State Information and Belief States . . . p. 98
+  1.6.7. Multiagent Problems and Multiagent Rollout . . . p. 102
+  1.6.8. Problems with Unknown or Changing Model -
+         Adaptive Control . . . . . . . . . . . . . . p. 107
+  1.6.9. Model Predictive Control . . . . . . . . . . p. 118
+1.7. Reinforcement Learning and Decision/Control . . . . p. 131
+  1.7.1. Differences in Terminology . . . . . . . . . . p. 132
+  1.7.2. Differences in Notation . . . . . . . . . . . p. 133
+  1.7.3. Relations Between DP and RL . . . . . . . . . p. 135
+  1.7.4. Synergy Between Large Language Models and RL . . p. 136
+  1.7.5. Machine Learning and Optimization . . . . . . p. 136
+  1.7.6. Mathematics in Machine Learning and Optimization p. 139
+1.8. Notes, Sources, and Exercises . . . . . . . . . . . p. 140
+
+
+PAGE 3
+
+Sec. 1.0                                                                   3
+
+This chapter has multiple purposes:
+
+(a) To provide an overview of the exact dynamic programming (DP) methodology, with a focus on suboptimal solution methods. We will first discuss finite horizon problems, which involve a finite sequence of successive decisions, and are thus conceptually and analytically simpler. We will consider separately deterministic and stochastic finite horizon problems (Sections 1.2 and 1.3, respectively). The reason is that deterministic problems are simpler and have some favorable characteristics, which allow the application of a broader variety of methods. Significantly, they include challenging discrete and combinatorial optimization problems, which can be fruitfully addressed with some of the reinforcement learning (RL) methods that are the main subject of the book. We will also discuss somewhat briefly the more intricate infinite horizon methodology (Section 1.4), and refer to the author’s DP textbooks [Ber12], [Ber17a], the RL books [Ber19a], [Ber20a], and the neuro-dynamic programming monograph [BeT96] for a fuller presentation.
+
+(b) To summarize the principal RL methodologies, with primary emphasis on approximation in value space. This is the approximate DP-based architecture that underlies the AlphaZero, AlphaGo, TD-Gammon and other related programs, as well as the Model Predictive Control (MPC) methodology, one of the principal control system design methods. We will also argue later (Chapter 2) that approximation in value space provides the entry point for the use of RL methods for solving discrete optimization and integer programming problems.
+
+(c) To explain the major principles of approximation in value space, and its division into the off-line training and the on-line play algorithms. A key idea here is the connection of these two algorithms through the algorithmic methodology of Newton’s method for solving the problem’s Bellman equation. This viewpoint, recently developed in the author’s “Rollout and Policy Iteration ...” book [Ber20a] and the visually oriented “Lessons from AlphaZero ...” monograph [Ber22a], underlies the entire course and is discussed for the simple, intuitive, and important class of linear quadratic problems in Section 1.5.
+
+(d) To give an overview of the range of problem types where our RL methods apply, and to explain some of their major algorithmic ideas (Section 1.6). Included here are partial state observation problems (POMDP), multiagent problems, and problems with unknown model parameters, which can be addressed with adaptive control methods.
+
+This chapter will also discuss selectively some major algorithms for approximate DP and RL, including rollout and policy iteration. A broader discussion of DP/RL may be found in the RL books [Ber19a], [Ber20a], the DP textbooks [Ber12], [Ber17a], the neuro-dynamic programming mono-
+
+
+PAGE 4
+
+4                 Exact and Approximate Dynamic Programming             Chap. 1
+
+graph [BeT96], alongside other textbooks referenced in Section 1.8.
+
+The book reflects the author’s decision/control and operations research orientation, which has in turn guided the choices of terminology, notation, and mathematical style throughout. On the other hand, RL methods have been developed within the artificial intelligence (AI) community, as well as the decision/control and operations research communities. Despite similarities in the mathematical structures of the problems that these communities address, there are notable differences in terminology, notation, and culture, which can be confusing to researchers entering the field. We have thus provided in Section 1.7 a glossary and an orientation to assist the reader in navigating the full range of the DP/RL literature.
+
+1.1 ALPHAZERO, OFF-LINE TRAINING, AND ON-LINE PLAY
+
+One of the most exciting recent success stories in RL is the development of the AlphaGo and AlphaZero programs by DeepMind Inc; see [SHM16], [SHS17], [SSS17]. AlphaZero plays chess, Go, and other games, and is an improvement in terms of performance and generality over AlphaGo, which plays the game of Go only. Both programs play better than all competitor computer programs available in 2022, and much better than all humans. These programs are remarkable in several other ways. In particular, they have learned how to play without human instruction, just data generated by playing against themselves. Moreover, they learned how to play very quickly. In fact, AlphaZero learned how to play chess better than all humans and computer programs within hours (with the help of awesome parallel computation power, it must be said).
+
+Perhaps the most impressive aspect of AlphaZero/chess is that its play is not just better, but it is also very different from human play in terms of long-term strategic vision. Remarkably, AlphaZero has discovered new ways to play a game that has been studied intensively by humans for hundreds of years. Still, for all of its impressive success and brilliant implementation, AlphaZero is couched in well-established theory and methodology, which is the subject of the present book, and is portable to far broader realms of engineering, economics, and other fields. This is the methodology of DP, policy iteration, limited lookahead, rollout, and approximation in value space.
+
+It is also worth noting that the principles of the AlphaZero design have much in common with the work of Tesauro [Tes94], [Tes95], [TeG96] on computer backgammon. Tesauro’s programs stimulated much interest in RL in the middle 1990s, and exhibit similarly different and better play than human backgammon players. A related impressive program for the (one-player) game of Tetris, also based on the method of policy iteration, is described by Scherrer et al. [SGG15], who relied on several earlier works, including those of Tsitsiklis and Van Roy [TsV96], and Bertsekas and Ioffe
+
+
+PAGE 5
+
+Sec. 1.1    AlphaZero, Off-Line Training, and On-Line Play                       5
+
+[BeI96]. For a better understanding of the connections of AlphaZero and AlphaGo Zero with Tesauro’s programs and the concepts developed here, the “Methods” section of the paper [SSS17] is recommended.
+
+To understand the overall structure of AlphaZero and its connection to our DP/RL methodology, it is useful to divide its design into two parts: off-line training, which is an algorithm that learns how to evaluate chess positions, and how to steer itself towards good positions with a default/base chess player, and on-line play, which is an algorithm that generates good moves in real time against a human or computer opponent, using the training it went through off-line. We will next briefly describe these algorithms, and relate them to DP concepts and principles.
+
+Off-Line Training and Policy Iteration
+
+This is the part of the program that learns how to play through off-line self-training, and is illustrated in Fig. 1.1.1. The algorithm generates a sequence of chess players and position evaluators. A chess player assigns “probabilities” to all legal moves in a given position, representing the likelihood of each move being chosen. A position evaluator assigns a numerical score to a given position, predicting the player’s chances of winning from that position. The chess player and the position evaluator are represented by two neural networks, a policy network and a value network, which accept a chess position and generate a set of move probabilities and a position evaluation, respectively.†
+
+In more traditional DP terminology, a position is the state of the game, a position evaluator is a cost function that gives (an estimate of) the optimal cost-to-go at a given state, and the chess player is a randomized policy for selecting actions/controls at a given state.‡
+
+The overall training algorithm is a form of policy iteration, a classical DP algorithm that will be of primary interest to us in this book. Starting from a given player, it repeatedly generates (approximately) improved players, and settles on a final player that is judged empirically to be “best”
+
+† Here the neural networks play the role of function approximators; see Chapter 3. By viewing a player as a function that assigns move probabilities to a position, and a position evaluator as a function that assigns a numerical score to a position, the policy and value networks provide approximations to these functions based on training with data (training algorithms for neural networks and other approximation architectures are also discussed in the RL books [Ber19a], [Ber20a], and the neuro-dynamic programming book [BeT96]).
+
+‡ One more complication is that chess and Go are two-player games, while most of our development will involve single-player optimization. However, DP theory extends to two-player games, although we will not focus on this extension. Alternately, we can consider training a game program to play against a known fixed opponent; this is a one-player setting, discussed further in Section 2.12.
+
+
+PAGE 6
+
+6                     Exact and Approximate Dynamic Programming                 Chap. 1
+
+Figure 1.1.1 Illustration of the AlphaZero training algorithm. It generates a sequence of position evaluators and chess players. The position evaluator and the chess player are represented by two neural networks, a value network and a policy network, which accept a chess position and generate a position evaluation and a set of move probabilities, respectively.
+
+Text in Figure 1.1.1:
+Current Player
+Policy Evaluation
+Value Network
+Policy Improvement
+Policy Network
+“Improved” Player
+Self-Learning/Policy Iteration
+
+out of all the players generated.† Policy iteration may be separated conceptually in two stages (see Fig. 1.1.1).
+
+(a) Policy evaluation: Given the current player and a chess position, the outcome of a game played out from the position provides a single data point. Many data points are collected and used to train a value network, which then serves as the position evaluator for the player.
+
+(b) Policy improvement: Given the current player and its position evaluator, trial move sequences are selected and evaluated for the rest of the game starting from many positions. An improved player is then generated by adjusting the move probabilities of the current player towards the trial moves that have yielded the best results. In AlphaZero this is done with a complicated algorithm called Monte Carlo Tree Search. However, policy improvement can also be done more simply. For example, all possible move sequences from a given position could be tried, extending forward a few moves, with the terminal
+
+† Quoting from the paper [SSS17]: “The AlphaGo Zero selfplay algorithm can similarly be understood as an approximate policy iteration scheme in which MCTS is used for both policy improvement and policy evaluation. Policy improvement starts with a neural network policy, executes an MCTS based on that policy’s recommendations, and then projects the (much stronger) search policy back into the function space of the neural network. Policy evaluation is applied to the (much stronger) search policy: the outcomes of selfplay games are also projected back into the function space of the neural network. These projection steps are achieved by training the neural network parameters to match the search probabilities and selfplay game outcome respectively.” Note, however, that a two-person game player, trained through selfplay, may fail against a particular human or computer player that can exploit training vulnerabilities. This is a theoretical but rare possibility; see our discussion in Section 2.12.
+
+
+PAGE 7
+
+Sec. 1.1   AlphaZero, Off-Line Training, and On-Line Play                   7
+
+position evaluated by the player’s position evaluator. The move evaluations obtained in this way are used to nudge the move probabilities of the current player towards more successful moves, thereby obtaining data that is used to train a policy network that represents the new player.
+
+Tesauro’s TD-Gammon algorithm [Tes94] is similarly based on approximate policy iteration, but uses a different methodology for approximate policy evaluation, based on the TD(λ) algorithm. Unlike AlphaZero, TD-Gammon does not employ a policy network or MCTS. Instead, it relies solely on a value network, to replicate the functionality of a policy network by generating moves on-line via a one-step or two-step lookahead minimization. For a detailed description, see Section 8.6 of the neuro-dynamic programming book [BeT96].
+
+On-Line Play and Approximation in Value Space - Rollout
+
+Suppose that a “final” player has been obtained through the AlphaZero off-line training process just described. This player could, in principle, play chess against any human or computer opponent by generating move probabilities using its off-line-trained policy network. At any position, the player would simply select the move with the highest probability from the policy network. While this approach would allow the player to make decisions quickly, it would not be strong enough to defeat highly skilled human opponents. AlphaZero’s extraordinary strength arises only when the off-line-trained player and position evaluator are embedded into another algorithm, which we refer to as the on-line player (see Fig. 1.1.2). At a given position, it generates a lookahead tree of all possible multiple move and countermove sequences, up to a given depth. It then evaluates the effect of the remaining moves by using the position evaluator of the off-line obtained value network.
+
+The architecture of the final version of Tesauro’s TD-Gammon program [TeG96] is similar to that of AlphaZero, and uses an off-line neural network-trained terminal position evaluator; see Fig. 1.1.3. However, it also includes a middle portion, called “truncated rollout,” which involves running a player for a few moves, before using the position evaluator. In effect, rollout can be viewed as an economical way to extend the length of the lookahead. In the published version of AlphaZero/chess [SHS17], there is also a rollout portion, but it is rather rudimentary; the first portion (multistep lookahead) is quite long and efficiently implemented, so that a sophisticated rollout portion is not essential. Rollout plays a significant role in AlphaGo [SHM16], and is critically important in Tesauro’s backgammon program, where long multistep lookahead is infeasible due to the rapid expansion of the lookahead tree.
+
+Architectures that are similar to those of AlphaZero and TD-Gammon will be generically referred to as approximation in value space in this book.
+
+
+PAGE 8
+
+8                   Exact and Approximate Dynamic Programming                Chap. 1
+
+Figure 1.1.2 Illustration of the on-line player of AlphaZero and many other computer chess programs. At a given position, it generates a lookahead tree of multiple moves up to some depth, and evaluates the effect of the remaining moves by using the position evaluator of the off-line player. There are many implementation details that we do not discuss here; for example the lookahead is selective, because some lookahead paths are pruned, by using a form of Monte Carlo tree search. Note that the off-line-trained neural network of AlphaZero produces both a position evaluator and a playing policy. However, the neural network-trained policy is not used directly for on-line play.
+
+Text in Figure 1.1.2:
+ON-LINE PLAY
+Lookahead Tree
+Current Position
+x₀
+xₖ
+States xₖ₊₁
+Off-Line Obtained Position Evaluator
+
+Architectures of this type are also known as approximate dynamic programming, or neuro-dynamic programming, and will be central for our purposes.†
+
+Among other settings, approximation in value space is used in control system design, particularly in model predictive control (MPC), which is described in Section 1.6.9. There, the number of steps in lookahead minimization is called the control interval, while the total number of steps in
+
+† The names “approximate dynamic programming” and “neuro-dynamic programming” are often used as synonyms to RL. However, RL is generally thought to also subsume the methodology of approximation in policy space, which involves search for optimal parameters within a parametrized set of policies. The search is done with methods that are largely unrelated to DP, such as for example stochastic gradient or random search methods. Approximation in policy space may be used off-line to design a policy that can be used for on-line rollout. It will be discussed in Sections 3.4 and 3.5. A more detailed discussion, consistent with the terminology used here, can be found in Chapter 5 of the RL book [Ber19a].
+
+
+PAGE 9
+
+Sec. 1.1     AlphaZero, Off-Line Training, and On-Line Play                               9
+
+Figure 1.1.3 Illustration of the architecture of TD-Gammon with truncated rollout [TeG96]. It uses a relatively short lookahead minimization followed by rollout and terminal position evaluation (i.e., game simulation with the one-step lookahead player; the game is truncated after a number of moves, with a position evaluation at the end). Note that backgammon involves stochastic uncertainty, and its state is the pair of current board position and dice roll. For this reason, rollout requires Monte-Carlo simulation, and is quite time-consuming. As a result, backgammon programs that play under restrictive time controls, use limited or highly truncated forms of rollout.
+
+Text in Figure 1.1.3:
+ON-LINE PLAY
+Lookahead Tree
+Current Position
+x₀
+xₖ
+States xₖ₊₁
+Base Heuristic
+Truncated Rollout
+Monte-Carlo Simulation
+Off-Line Obtained Position Evaluator
+
+lookahead minimization and truncated rollout is called the prediction interval; see e.g., Magni et al. [MDM01].† The benefit of truncated rollout in providing an economical substitute for longer lookahead minimization is well known in MPC.
+
+It should be noted that the preceding description of AlphaZero and related approximation in value space architectures is somewhat simplified. We will be discussing refinements and details as the book progresses. However, DP ideas with cost function approximations, similar to the on-line player illustrated in Fig. 1.1.2, will be central to the book. Moreover, the algorithmic division between off-line training and on-line policy implementation will be conceptually very important for our discussions.
+
+We finally note that in approximation in value space the off-line training and the on-line play algorithms can often be decoupled and independently designed. For example the off-line training portion may be simple, such as using a known policy for rollout without truncation, or without
+
+† The Matlab toolbox for MPC design explicitly allows the user to set these two intervals.
+
+
+PAGE 10
+
+10                     Exact and Approximate Dynamic Programming                         Chap. 1
+
+Figure 1.2.1 Illustration of a deterministic N-stage optimal control problem. Starting from state xₖ, the next state under control uₖ is generated nonrandomly, according to
+
+xₖ₊₁ = fₖ(xₖ, uₖ),
+
+and a stage cost gₖ(xₖ, uₖ) is incurred.
+
+Text in Figure 1.2.1:
+Control uₖ
+Deterministic Transition
+xₖ₊₁ = fₖ(xₖ, uₖ)
+Future Stages
+Terminal Cost gN(xN)
+x₀ ... xₖ ... xₖ₊₁ ... xN
+Stage k
+Cost gₖ(xₖ, uₖ)
+
+terminal cost approximation. Conversely, a sophisticated process may be used for off-line training of a terminal cost function approximation, which is used immediately following one-step or multistep lookahead in a value space approximation scheme.
+
+1.2 DETERMINISTIC DYNAMIC PROGRAMMING
+
+In all DP problems, the central object is a discrete-time dynamic system that generates a sequence of states under the influence of actions or controls. The system may evolve deterministically or randomly (under the additional influence of a random disturbance).
+
+1.2.1 Finite Horizon Problem Formulation
+
+In finite horizon problems the system evolves over a finite number N of time steps (also called stages). The state and control at time k of the system will be generally denoted by xₖ and uₖ, respectively. In deterministic systems, xₖ₊₁ is generated nonrandomly, i.e., it is determined solely by xₖ and uₖ; see Fig. 1.2.1. Thus, a deterministic DP problem involves a system of the form
+
+xₖ₊₁ = fₖ(xₖ, uₖ),   k = 0, 1, …, N − 1,        (1.1)
+
+where
+
+k is the time index,
+
+xₖ is the state of the system, an element of some space,
+
+uₖ is the control or decision variable, to be selected at time k from some given set Uₖ(xₖ) that depends on xₖ,
+
+fₖ is a function of (xₖ, uₖ) that describes the mechanism by which the state is updated from time k to time k + 1,

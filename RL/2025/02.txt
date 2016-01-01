@@ -1,0 +1,259 @@
+PDF PAGE 1
+
+Sec. 1.2  Deterministic Dynamic Programming                                      11
+
+N is the horizon, i.e., the number of times control is applied.
+
+In the case of a finite number of states, the system function fₖ may be represented by a table that gives the next state xₖ₊₁ for each possible value of the pair (xₖ, uₖ). Otherwise a mathematical expression or a computer implementation is necessary to represent fₖ.
+
+The set of all possible xₖ is called the state space at time k. It can be any set and may depend on k. Similarly, the set of all possible uₖ is called the control space at time k. Again it can be any set and may depend on k. Similarly, the system function fₖ can be arbitrary and may depend on k.†
+
+The problem also involves a cost function that is additive in the sense that the cost incurred at time k, denoted by gₖ(xₖ, uₖ), accumulates over time. Formally, gₖ is a function of (xₖ, uₖ) that takes scalar values, and may depend on k. For a given initial state x₀, the total cost of a control sequence {u₀, …, uₙ₋₁} is
+
+J(x₀; u₀, …, uₙ₋₁) = gₙ(xₙ) + ∑ₖ₌₀ⁿ⁻¹ gₖ(xₖ, uₖ),     (1.2)
+
+where gₙ(xₙ) is a terminal cost incurred at the end of the process. This is a well-defined scalar, since the control sequence {u₀, …, uₙ₋₁} together with x₀ determines exactly the state sequence {x₁, …, xₙ} via the system equation (1.1). We want to minimize the cost (1.2) over all sequences {u₀, …, uₙ₋₁} that satisfy the control constraints, thereby obtaining the optimal value as a function of x₀:
+
+J*(x₀) = min J(x₀; u₀, …, uₙ₋₁).     (1.3)
+          uₖ ∈ Uₖ(xₖ)
+          k=0,…,N−1
+
+† This generality is one of the great strengths of the DP methodology and guides the exposition style of this book, and the author’s other DP works. By allowing general state and control spaces (discrete, continuous, or mixtures thereof), and a k-dependent choice of these spaces, we can focus attention on the truly essential algorithmic aspects of the DP approach, exclude extraneous assumptions and constraints from our model, and avoid duplication of analysis.
+
+The generality of our DP model is also partly responsible for our choice of notation. In the AI and operations research communities, finite-state models, often referred to as Markovian Decision Problems (MDP), are common and use a transition probability notation (see Section 1.7.2). Unfortunately, this notation is not well suited for deterministic models, and also for continuous-spaces models, both of which are important for the purposes of this book. For the latter models, it involves transition probability distributions over continuous spaces, and leads to mathematics that is far more complex as well as less intuitive than that based on the use of the system function (1.1).
+
+‡ Here and later we write “min” (rather than “inf”) even if we are not sure that the minimum is attained; similarly we write “max” (rather than “sup”) even if we are not sure that the maximum is attained.
+
+
+PDF PAGE 2
+
+12  Exact and Approximate Dynamic Programming  Chap. 1
+
+Figure 1.2.2. Transition graph for a deterministic finite-state system. Nodes correspond to states xₖ. Arcs correspond to state-control pairs (xₖ, uₖ). An arc (xₖ, uₖ) has start and end nodes xₖ and xₖ₊₁ = fₖ(xₖ, uₖ), respectively. We view the cost gₖ(xₖ, uₖ) of the transition as the length of this arc. The problem is equivalent to finding a shortest path from initial nodes of stage 0 to the terminal node t.
+
+Text labels within Figure 1.2.2: State Space Partition; Initial States; State Transition; Cost g₁(x₁, u₁); x₂ = f₁(x₁, u₁); Artificial Terminal Node; Terminal Arcs with Cost Equal to Terminal Cost gₙ(xₙ); x₀, x₁, x₂, xₙ₋₁, xₙ; u₀, u₁, uₙ₋₁; Stage 0, Stage 1, Stage 2, …, Stage N−1, Stage N; Current Position; t.
+
+Discrete Optimal Control Problems
+
+There are many situations where the state and control spaces are naturally discrete and consist of a finite number of elements. Such problems are often conveniently described with an acyclic graph specifying for each state xₖ the possible transitions to next states xₖ₊₁. The nodes of the graph correspond to states xₖ and the arcs of the graph correspond to state-control pairs (xₖ, uₖ). Each arc with start node xₖ corresponds to a choice of a single control uₖ ∈ Uₖ(xₖ) and has as end node the next state fₖ(xₖ, uₖ). The cost of an arc (xₖ, uₖ) is defined as gₖ(xₖ, uₖ); see Fig. 1.2.2. To handle the final stage, an artificial terminal node t is added. Each state xₙ at stage N is connected to the terminal node t with an arc having cost gₙ(xₙ).
+
+Note that control sequences {u₀, …, uₙ₋₁} correspond to paths originating at the initial state (a node at stage 0) and terminating at one of the nodes corresponding to the final stage N. If we view the cost of an arc as its length, we see that a deterministic finite-state finite-horizon problem is equivalent to finding a minimum-length (or shortest) path from the initial nodes of the graph (stage 0) to the terminal node t. Here, by the length of a path we mean the sum of the lengths of its arcs.†
+
+Generally, combinatorial optimization problems can be formulated as deterministic finite-state finite-horizon optimal control problems. The idea
+
+† It turns out also that any shortest path problem (with a possibly nonacyclic graph) can be reformulated as a finite-state deterministic optimal control problem. See [Ber17a], Section 2.1, and [Ber91], [Ber98] for extensive accounts of shortest path methods, which connect with our discussion here.
+
+
+PDF PAGE 3
+
+Sec. 1.2  Deterministic Dynamic Programming                                      13
+
+Figure 1.2.3. The transition graph of the deterministic scheduling problem of Example 1.2.1. Each arc of the graph corresponds to a decision leading from some state (the start node of the arc) to some other state (the end node of the arc). The corresponding cost is shown next to the arc. The cost of the last operation is shown as a terminal cost next to the terminal nodes of the graph.
+
+Text and labels within Figure 1.2.3: Initial State; Sₐ; S꜀; A, C, AB, AC, CA, CD, ABC, ACB, ACD, CAB, CAD, CDA; Cₐᵦ, Cₐ꜀, Cᵦ꜀, C꜀ᵦ, C꜀ᴅ, Cᴅᵦ, Cᴅ꜀, C꜀ₐ, Cₐᴅ, Cᴅₐ, C꜀ᵦ, Cₐᵦ.
+
+The idea is to break down the solution into components, which can be computed sequentially. The following is an illustrative example.
+
+Example 1.2.1 (A Deterministic Scheduling Problem)
+
+Suppose that to produce a certain product, four operations must be performed on a given machine. The operations are denoted by A, B, C, and D. We assume that operation B can be performed only after operation A has been performed, and operation D can be performed only after operation C has been performed. (Thus the sequence CDAB is allowable but the sequence CDBA is not.) The setup cost Cₘₙ for passing from any operation m to any other operation n is given. There is also an initial startup cost Sₐ or S꜀ for starting with operation A or C, respectively (cf. Fig. 1.2.3). The cost of a sequence is the sum of the setup costs associated with it; for example, the operation sequence ACDB has cost Sₐ + Cₐ꜀ + C꜀ᴅ + Cᴅᵦ.
+
+We can view this problem as a sequence of three decisions, namely the choice of the first three operations to be performed (the last operation is determined from the preceding three). It is appropriate to consider as state the set of operations already performed, the initial state being an artificial state corresponding to the beginning of the decision process. The possible state transitions corresponding to the possible states and decisions for this problem are shown in Fig. 1.2.3. Here the problem is deterministic, i.e., at a given state, each choice of control leads to a uniquely determined state. For example, at state AC the decision to perform operation D leads to state ACD
+
+
+PDF PAGE 4
+
+14  Exact and Approximate Dynamic Programming  Chap. 1
+
+with certainty, and has cost C꜀ᴅ. Thus the problem can be conveniently represented with the transition graph of Fig. 1.2.3 (which in turn is a special case of the graph of Fig. 1.2.2). The optimal solution corresponds to the path that starts at the initial state and ends at some state at the terminal time and has minimum sum of arc costs plus the terminal cost.
+
+1.2.2 The Dynamic Programming Algorithm
+
+In this section we will state the DP algorithm and formally justify it. Generally, DP is used to solve a problem of sequential decision making over N stages, by breaking it down to a sequence of simpler single-stage problems.
+
+In particular, the algorithm aims to find a sequence of optimal controls u*₀, …, u*ₙ₋₁ by generating a corresponding sequence of optimal cost functions J*₀, …, J*ₙ₋₁. It starts with J*ₙ equal to the terminal cost function gₙ and computes the next function J*ₙ₋₁, by solving a single stage decision problem whose optimization variable is uₙ₋₁. It then uses J*ₙ₋₁ to compute J*ₙ₋₂, and proceeds similarly to compute all the remaining cost functions J*ₙ₋₃, …, J*₀.
+
+The algorithm rests on a simple idea, the principle of optimality, which roughly states the following; see Fig. 1.2.4.
+
+Principle of Optimality
+
+Let {u*₀, …, u*ₙ₋₁} be an optimal control sequence, which together with x₀ determines the corresponding state sequence {x*₁, …, x*ₙ} via the system equation (1.1). Consider the subproblem whereby we start at x*ₖ at time k and wish to minimize the “cost-to-go” from time k to time N,
+
+gₖ(x*ₖ, uₖ) + ∑ₘ₌ₖ₊₁ᴺ⁻¹ gₘ(xₘ, uₘ) + gₙ(xₙ),
+
+over {uₖ, …, uₙ₋₁} with uₘ ∈ Uₘ(xₘ), m = k, …, N−1. Then the truncated optimal control sequence {u*ₖ, …, u*ₙ₋₁} is optimal for this subproblem.
+
+The subproblem referred to above is called the tail subproblem that starts at x*ₖ. Stated succinctly, the principle of optimality says that the tail of an optimal sequence is optimal for the tail subproblem. Its intuitive justification is simple. If the truncated control sequence {u*ₖ, …, u*ₙ₋₁} were not optimal as stated, we would be able to reduce the cost further by switching to an optimal sequence for the subproblem once we reach x*ₖ (since the preceding choices of controls, u*₀, …, u*ₖ₋₁, do not restrict our future choices).
+
+For an auto travel analogy, suppose that the fastest route from Phoenix to Boston passes through St Louis. The principle of optimality translates
+
+
+PDF PAGE 5
+
+Sec. 1.2  Deterministic Dynamic Programming                                      15
+
+Figure 1.2.4. Schematic illustration of the principle of optimality. The tail {u*ₖ, …, u*ₙ₋₁} of an optimal sequence {u*₀, …, u*ₙ₋₁} is optimal for the tail subproblem that starts at the state x*ₖ of the optimal state trajectory.
+
+Figure labels: Future Cost; Stages 0; Terminal Cost; Time k; Time N; Tail subproblem; x*ₖ; Optimal control sequence {u*₀, …, u*ₖ, …, u*ₙ₋₁}.
+
+to the obvious fact that the St Louis to Boston portion of the route is also the fastest route for a trip that starts from St Louis and ends in Boston.†
+
+The principle of optimality suggests that the optimal cost function can be constructed in piecemeal fashion going backwards: first compute the optimal cost function for the “tail subproblem” involving the last stage, then solve the “tail subproblem” involving the last two stages, and continue in this manner until the optimal cost function for the entire problem is constructed.
+
+The DP algorithm is based on this idea: it proceeds sequentially by solving all the tail subproblems of a given time length, using the solution of the tail subproblems of shorter time length. We illustrate the algorithm with the scheduling problem of Example 1.2.1. The calculations are simple but tedious, and may be skipped without loss of continuity. However, they may be worth going over by a reader who has no prior experience in the use of DP.
+
+Example 1.2.1 (Scheduling Problem—Continued)
+
+Let us consider the scheduling Example 1.2.1, and let us apply the principle of optimality to calculate the optimal schedule. We have to schedule optimally the four operations A, B, C, and D. There is a cost for a transition between two operations, and the numerical values of the transition costs are shown in Fig. 1.2.5 next to the corresponding arcs.
+
+According to the principle of optimality, the “tail” portion of an optimal schedule must be optimal. For example, suppose that the optimal schedule is CABD. Then, having scheduled first C and then A, it must be optimal to complete the schedule with BD rather than with DB. With this in mind, we solve all possible tail subproblems of length two, then all tail subproblems of length three, and finally the original problem that has length four (the subproblems of length one are of course trivial because there is only one operation
+
+† In the words of Bellman [Bel57]: “An optimal trajectory has the property that at an intermediate point, no matter how it was reached, the rest of the trajectory must coincide with an optimal trajectory as computed from this intermediate point as the starting point.”
+
+
+PDF PAGE 6
+
+16  Exact and Approximate Dynamic Programming  Chap. 1
+
+Figure 1.2.5. Transition graph of the deterministic scheduling problem, with the cost of each decision shown next to the corresponding arc. Next to each node/state we show the cost to optimally complete the schedule starting from that state. This is the optimal cost of the corresponding tail subproblem (cf. the principle of optimality). The optimal cost for the original problem is equal to 10, as shown next to the initial state. The optimal schedule corresponds to the thick-line arcs.
+
+Figure labels: Initial State; A, C, AB, AC, CA, CD, ABC, ACB, ACD, CAB, CAD, CDA; arc costs 1, 2, 3, 4, 5, 6; node costs 1, 2, 3, 5, 6, 7, 8, 9, 10; Sₐ, S꜀; thick red optimal-path arcs.
+
+that is as yet unscheduled). As we will see shortly, the tail subproblems of length k + 1 are easily solved once we have solved the tail subproblems of length k, and this is the essence of the DP technique.
+
+Tail Subproblems of Length 2: These subproblems are the ones that involve two unscheduled operations and correspond to the states AB, AC, CA, and CD (see Fig. 1.2.5).
+
+State AB: Here it is only possible to schedule operation C as the next operation, so the optimal cost of this subproblem is 9 (the cost of scheduling C after B, which is 3, plus the cost of scheduling D after C, which is 6).
+
+State AC: Here the possibilities are to (a) schedule operation B and then D, which has cost 5, or (b) schedule operation D and then B, which has cost 9. The first possibility is optimal, and the corresponding cost of the tail subproblem is 5, as shown next to node AC in Fig. 1.2.5.
+
+State CA: Here the possibilities are to (a) schedule operation B and then D, which has cost 3, or (b) schedule operation D and then B, which has cost 7. The first possibility is optimal, and the corresponding cost of the tail subproblem is 3, as shown next to node CA in Fig. 1.2.5.
+
+State CD: Here it is only possible to schedule operation A as the next operation, so the optimal cost of this subproblem is 5.
+
+
+PDF PAGE 7
+
+Sec. 1.2  Deterministic Dynamic Programming                                      17
+
+Tail Subproblems of Length 3: These subproblems can now be solved using the optimal costs of the subproblems of length 2.
+
+State A: Here the possibilities are to (a) schedule next operation B (cost 2) and then solve optimally the corresponding subproblem of length 2 (cost 9, as computed earlier), a total cost of 11, or (b) schedule next operation C (cost 3) and then solve optimally the corresponding subproblem of length 2 (cost 5, as computed earlier), a total cost of 8. The second possibility is optimal, and the corresponding cost of the tail subproblem is 8, as shown next to node A in Fig. 1.2.5.
+
+State C: Here the possibilities are to (a) schedule next operation A (cost 4) and then solve optimally the corresponding subproblem of length 2 (cost 3, as computed earlier), a total cost of 7, or (b) schedule next operation D (cost 6) and then solve optimally the corresponding subproblem of length 2 (cost 5, as computed earlier), a total cost of 11. The first possibility is optimal, and the corresponding cost of the tail subproblem is 7, as shown next to node C in Fig. 1.2.5.
+
+Original Problem of Length 4: The possibilities here are (a) start with operation A (cost 5) and then solve optimally the corresponding subproblem of length 3 (cost 8, as computed earlier), a total cost of 13, or (b) start with operation C (cost 3) and then solve optimally the corresponding subproblem of length 3 (cost 7, as computed earlier), a total cost of 10. The second possibility is optimal, and the corresponding optimal cost is 10, as shown next to the initial state node in Fig. 1.2.5.
+
+Note that having computed the optimal cost of the original problem through the solution of all the tail subproblems, we can construct the optimal schedule: we begin at the initial node and proceed forward, each time choosing the optimal operation, i.e., the one that starts the optimal schedule for the corresponding tail subproblem. In this way, by inspection of the graph and the computational results of Fig. 1.2.5, we determine that CABD is the optimal schedule.
+
+Finding an Optimal Control Sequence by DP
+
+We now state the DP algorithm for deterministic finite horizon problems by translating into mathematical terms the heuristic argument underlying the principle of optimality. The algorithm constructs functions
+
+J*ₙ(xₙ), J*ₙ₋₁(xₙ₋₁), …, J*₀(x₀),
+
+sequentially, starting from J*ₙ and proceeding backwards to J*ₙ₋₁, J*ₙ₋₂, etc. We will show that the value J*ₖ(xₖ) represents the optimal cost of the tail subproblem that starts at state xₖ at time k.
+
+
+PDF PAGE 8
+
+18  Exact and Approximate Dynamic Programming  Chap. 1
+
+Figure 1.2.6. Illustration of the DP algorithm. The tail subproblem that starts at state xₖ at time k minimizes over {uₖ, …, uₙ₋₁} the “cost-to-go” from k to N,
+
+gₖ(xₖ, uₖ) + ∑ₘ₌ₖ₊₁ᴺ⁻¹ gₘ(xₘ, uₘ) + gₙ(xₙ).
+
+To solve it, we choose uₖ to minimize the (1st stage cost + Optimal tail problem cost), or
+
+J*ₖ(xₖ) = min [gₖ(xₖ, uₖ) + J*ₖ₊₁(fₖ(xₖ, uₖ))].
+           uₖ ∈ Uₖ(xₖ)
+
+Figure labels: Tail subproblem; Time k; Time N; xₖ; Optimal Cost J*ₖ(xₖ); Future Cost; Stages 0; Terminal Cost; uₖ, u′ₖ, u″ₖ; xₖ₊₁, x′ₖ₊₁, x″ₖ₊₁; Opt. Cost J*ₖ₊₁(xₖ₊₁), Opt. Cost J*ₖ₊₁(x′ₖ₊₁), Opt. Cost J*ₖ₊₁(x″ₖ₊₁).
+
+DP Algorithm for Deterministic Finite Horizon Problems
+
+Start with
+
+J*ₙ(xₙ) = gₙ(xₙ), for all xₙ,     (1.4)
+
+and for k = 0, …, N−1, let
+
+J*ₖ(xₖ) = min [gₖ(xₖ, uₖ) + J*ₖ₊₁(fₖ(xₖ, uₖ))], for all xₖ.     (1.5)
+           uₖ ∈ Uₖ(xₖ)
+
+The DP algorithm together with the construction of the functions J*ₖ(xₖ) are illustrated in Fig. 1.2.6. Note that at stage k, the calculation in Eq. (1.5) must be done for all states xₖ before proceeding to stage k − 1. The key fact about the DP algorithm is that for every initial state x₀, the number J*₀(x₀) obtained at the last step, is equal to the optimal cost J*(x₀). Indeed, a more general fact can be shown, namely that for all
+
+
+PDF PAGE 9
+
+Sec. 1.2  Deterministic Dynamic Programming                                      19
+
+k = 0, 1, …, N−1, and all states xₖ at time k, we have
+
+J*ₖ(xₖ) = min J(xₖ; uₖ, …, uₙ₋₁).     (1.6)
+            uₘ ∈ Uₘ(xₘ)
+            m=k,…,N−1
+
+where J(xₖ; uₖ, …, uₙ₋₁) is the cost generated by starting at xₖ and using subsequent controls uₖ, …, uₙ₋₁:
+
+J(xₖ; uₖ, …, uₙ₋₁) = gₙ(xₙ) + ∑ₜ₌ₖᴺ⁻¹ gₜ(xₜ, uₜ).     (1.7)
+
+Thus, J*ₖ(xₖ) is the optimal cost for an (N − k)-stage tail subproblem that starts at state xₖ and time k, and ends at time N.† Based on the interpretation (1.6) of J*ₖ(xₖ), we call it the optimal cost-to-go from state xₖ at stage k, and refer to J*ₖ as the optimal cost-to-go function or optimal cost function at time k. In maximization problems the DP algorithm (1.5) is written with maximization in place of minimization, and then J*ₖ is referred to as the optimal value function at time k.
+
+Once the functions J*₀, …, J*ₙ have been obtained, we can use a forward algorithm to construct an optimal control sequence {u*₀, …, u*ₙ₋₁} and corresponding state trajectory {x*₁, …, x*ₙ} for the given initial state x₀.
+
+† We can prove this by induction. The assertion holds for k = N in view of the initial condition
+
+J*ₙ(xₙ) = gₙ(xₙ).
+
+To show that it holds for all k, we use Eqs. (1.6) and (1.7) to write
+
+J*ₖ(xₖ)
+= min [gₙ(xₙ) + ∑ₜ₌ₖᴺ⁻¹ gₜ(xₜ, uₜ)]
+  uₜ ∈ Uₜ(xₜ), t=k,…,N−1
+
+= min {gₖ(xₖ, uₖ) +
+        min [gₙ(xₙ) + ∑ₜ₌ₖ₊₁ᴺ⁻¹ gₜ(xₜ, uₜ)]}
+  uₖ ∈ Uₖ(xₖ)   uₜ ∈ Uₜ(xₜ), t=k+1,…,N−1
+
+= min [gₖ(xₖ, uₖ) + J*ₖ₊₁(fₖ(xₖ, uₖ))].
+  uₖ ∈ Uₖ(xₖ)
+
+where for the last equality we use the induction hypothesis. A subtle mathematical point here is that, through the minimization operation, the cost-to-go functions J*ₖ may take the value −∞ for some xₖ. Still the preceding induction argument is valid even if this is so.
+
+
+PDF PAGE 10
+
+20  Exact and Approximate Dynamic Programming  Chap. 1
+
+Construction of Optimal Control Sequence {u*₀, …, u*ₙ₋₁}
+
+Set
+
+u*₀ ∈ arg min [g₀(x₀, u₀) + J*₁(f₀(x₀, u₀))],
+         u₀ ∈ U₀(x₀)
+
+and
+
+x*₁ = f₀(x₀, u*₀).
+
+Sequentially, going forward, for k = 1, 2, …, N−1, set
+
+u*ₖ ∈ arg min [gₖ(x*ₖ, uₖ) + J*ₖ₊₁(fₖ(x*ₖ, uₖ))],     (1.8)
+         uₖ ∈ Uₖ(xₖ)
+
+and
+
+x*ₖ₊₁ = fₖ(x*ₖ, u*ₖ).
+
+The same algorithm can be used to find an optimal control sequence for any tail subproblem. Figure 1.2.5 traces the calculations of the DP algorithm for the scheduling Example 1.2.1. The numbers next to the nodes give the corresponding cost-to-go values, and the thick-line arcs give the construction of the optimal control sequence using the preceding algorithm.
+
+The following example deals with the classical traveling salesman problem involving N cities. Here, the number of states grows exponentially with N, and so does the corresponding amount of computation for exact DP. We will show later that with rollout, we can solve the problem approximately with computation that grows polynomially with N.
+
+Example 1.2.2 (Traveling Salesman Problem)
+
+Here we are given N cities and the travel time between each pair of cities. We wish to find a minimum-time travel that visits each of the cities exactly once and returns to the start city. To convert this problem to a DP problem, we form a graph whose nodes are the sequences of k distinct cities, where k = 1, …, N. The k-city sequences correspond to the states of the kth stage. The initial state x₀ consists of some city, taken as the start (city A in the example of Fig. 1.2.7). A k-city node/state leads to a (k + 1)-city node/state by adding a new city at a cost equal to the travel time between the last two of the k + 1 cities; see Fig. 1.2.7. Each sequence of N cities is connected to an artificial terminal node t with an arc of cost equal to the travel time from the last city of the sequence to the starting city, thus completing the transformation to a DP problem.
+
+The optimal costs-to-go from each node to the terminal state can be obtained by the DP algorithm and are shown next to the nodes. Note, however, that the number of nodes grows exponentially with the number of cities N. This makes the DP solution intractable for large N. As a result, large traveling-salesman and related scheduling problems are typically not addressed with
+
+[The supplied PDF text ends here, mid-sentence. The remaining content of page 10, including any additional figure text, is not present in the material provided.]

@@ -1,0 +1,586 @@
+[PDF page 1 — printed page 31]
+
+Sec. 1.3    Stochastic Dynamic Programming
+
+policy on-line to retrieve from memory and apply the control μₖ* (xₖ) once
+we reach state xₖ. The alternative is to forego the storage of the policy π*
+and to calculate the control μₖ* (xₖ) by executing the minimization (1.15)
+on-line.
+
+There are a few favorable cases where the optimal cost-to-go functions Jₖ*
+and the optimal policies μₖ* can be computed analytically using the
+stochastic DP algorithm. A prominent such case involves a linear system
+and a quadratic cost function, which is a fundamental problem in control
+theory. We illustrate the scalar version of this problem next. The analysis
+can be generalized to multidimensional systems (see optimal control
+textbooks such as [Ber17a]).
+
+Example 1.3.1 (Linear Quadratic Optimal Control)
+
+Here the system is linear,
+
+xₖ₊₁ = axₖ + buₖ + wₖ,    k = 0, . . . , N − 1,
+
+and the state and control are scalars. Moreover, the disturbance wₖ has zero
+mean and given variance σ². The cost is quadratic of the form:
+
+                 N−1
+qx²N +           ∑ (qx²ₖ + ru²ₖ),
+                 k=0
+
+where q and r are known positive weighting parameters. We assume no
+constraints on xₖ and uₖ (in reality such problems include constraints, but
+it is common to neglect the constraints initially, and check whether they are
+seriously violated later).
+
+As an illustration, consider a vehicle that moves on a straight-line road
+under the influence of a force uₖ and without friction. Our objective is to
+maintain the vehicle’s velocity at a constant level v̄ (as in an oversimplified
+cruise control system). The velocity vₖ at time k, after time discretization of
+its Newtonian dynamics and addition of stochastic noise, evolves according
+to
+
+vₖ₊₁ = vₖ + buₖ + wₖ,                                      (1.16)
+
+where wₖ is a stochastic disturbance. By introducing xₖ = vₖ − v̄, the
+deviation between the vehicle’s velocity vₖ at time k from the desired level
+v̄, we obtain the system equation
+
+xₖ₊₁ = xₖ + buₖ + wₖ.
+
+Here the coefficient b relates to a number of problem characteristics
+including the weight of the vehicle and the road conditions. The cost
+function expresses our desire to keep xₖ near zero with relatively little
+force.
+
+We will apply the DP algorithm, and derive the optimal cost-to-go
+functions Jₖ* and optimal policy. We have
+
+J*N(xN) = qx²N,
+
+
+[PDF page 2 — printed page 32]
+
+Exact and Approximate Dynamic Programming    Chap. 1
+
+and by applying Eq. (1.15), we obtain
+
+J*N−1(xN−1) = min E{qx²N−1 + ru²N−1 + J*N
+                    (axN−1 + buN−1 + wN−1)}
+               uN−1
+
+             = min E{qx²N−1 + ru²N−1
+               uN−1
+                    + q(axN−1 + buN−1 + wN−1)²}
+
+             = min {qx²N−1 + ru²N−1
+               uN−1
+                    + q(axN−1 + buN−1)²
+                    + 2qE{wN−1}(axN−1 + buN−1)
+                    + qE{w²N−1}},
+
+and finally, using the assumptions E{wN−1} = 0, E{w²N−1} = σ², and
+bringing out of the minimization the terms that do not depend on uN−1,
+
+J*N−1(xN−1) = qx²N−1 + qσ²
+              + min {ru²N−1 + q(axN−1 + buN−1)²}.          (1.17)
+                uN−1
+
+The expression minimized over uN−1 in the preceding equation is convex
+quadratic in uN−1, so by setting to zero its derivative with respect to uN−1,
+
+0 = 2ruN−1 + 2qb(axN−1 + buN−1),
+
+we obtain the optimal policy for the last stage:
+
+                         abq
+μ*N−1(xN−1) = − ───────────── xN−1.
+                       r + b²q
+
+Substituting this expression into Eq. (1.17), we obtain with a
+straightforward calculation
+
+J*N−1(xN−1) = KN−1x²N−1 + qσ²,
+
+where
+
+             a²rq
+KN−1 = ───────────── + q.
+          r + b²q
+
+We can now continue the DP algorithm to obtain J*N−2 from J*N−1.
+An important observation is that J*N−1 is quadratic (plus an
+inconsequential constant term), so with a similar calculation we can derive
+μ*N−2 and J*N−2 in closed form, as a linear and a quadratic (plus constant)
+function of xN−2, respectively. This process can be continued going
+backwards, and it can be verified by induction that for all k, we obtain the
+optimal policy and optimal cost-to-go function in the form
+
+μ*k(xₖ) = Lₖxₖ,    k = 0, 1, . . . , N − 1,
+
+                 N−1
+J*k(xₖ) = Kₖx²ₖ + σ² ∑ Kₜ₊₁,    k = 0, 1, . . . , N − 1,
+                 t=k
+
+where
+
+          abKₖ₊₁
+Lₖ = − ─────────────,    k = 0, 1, . . . , N − 1,        (1.18)
+        r + b²Kₖ₊₁
+
+
+[PDF page 3 — printed page 33]
+
+Sec. 1.3    Stochastic Dynamic Programming
+
+and the sequence {Kₖ} is generated backwards by the equation
+
+          a²rKₖ₊₁
+Kₖ = ───────────── + q,    k = 0, 1, . . . , N − 1,    (1.19)
+        r + b²Kₖ₊₁
+
+starting from the terminal condition KN = q.
+
+The process by which we obtained an analytical solution in this example
+is noteworthy. A little thought while tracing the steps of the algorithm will
+convince the reader that what simplifies the solution is the quadratic
+nature of the cost and the linearity of the system equation. Indeed, it can
+be shown in generality that when the system is linear and the cost is
+quadratic, the optimal policy and cost-to-go function are given by
+closed-form expressions, even for multi-dimensional linear systems (see
+[Ber17a], Section 3.1). The optimal policy is a linear function of the state,
+and the optimal cost function is a quadratic in the state plus a constant.
+
+Another remarkable feature of this example, which can also be extended
+to multi-dimensional systems, is that the optimal policy does not depend
+on the variance of wₖ, and remains unaffected when wₖ is replaced by its
+mean (which is zero in our example). This is known as certainty
+equivalence, and occurs in several types of problems involving a linear
+system and a quadratic cost; see [Ber17a], Sections 3.1 and 4.2. For
+example it holds even when wₖ has nonzero mean. For other problems,
+certainty equivalence can be used as a basis for problem approximation,
+e.g., assume that certainty equivalence holds (i.e., replace stochastic
+quantities by some typical values, such as their expected values) and apply
+exact DP to the resulting deterministic optimal control problem. This is
+an important part of the RL methodology, which we will discuss later in
+this chapter, and in more detail in Chapter 2.
+
+Note that the linear quadratic type of problem illustrated in the preceding
+example is exceptional in that it admits an elegant analytical solution.
+Most DP problems encountered in practice require a computational
+solution.
+
+Q-Factors and Q-Learning for Stochastic Problems
+
+Similar to the case of deterministic problems [cf. Eq. (1.9)], we can define
+optimal Q-factors for a stochastic problem, as the expressions that are
+minimized in the right-hand side of the stochastic DP equation (1.15).
+They are given by
+
+Q*k(xₖ, uₖ) = E_wₖ{gₖ(xₖ, uₖ, wₖ)
+                    + J*ₖ₊₁(fₖ(xₖ, uₖ, wₖ))}.             (1.20)
+
+The optimal cost-to-go functions J*k can be recovered from the optimal
+Q-factors Q*k by means of
+
+J*k(xₖ) = min Q*k(xₖ, uₖ),
+          uₖ ∈ Uₖ(xₖ)
+
+[PDF page 4 — printed page 34]
+
+Exact and Approximate Dynamic Programming    Chap. 1
+
+and the DP algorithm can be written in terms of Q-factors as
+
+Q*k(xₖ, uₖ) = E_wₖ{gₖ(xₖ, uₖ, wₖ)
+    + min_{uₖ₊₁ ∈ Uₖ₊₁(fₖ(xₖ,uₖ,wₖ))}
+        Q*ₖ₊₁(fₖ(xₖ, uₖ, wₖ), uₖ₊₁)}.
+
+We will later be interested in approximate Q-factors, where J*ₖ₊₁ in
+Eq. (1.20) is replaced by an approximation J̃ₖ₊₁. Again, the Q-factor
+corresponding to a state-control pair (xₖ, uₖ) is the sum of the expected
+first stage cost using (xₖ, uₖ), plus the expected cost of the remaining
+stages starting from the next state as estimated by the function J̃ₖ₊₁.
+
+1.3.2 Approximation in Value Space for Stochastic DP
+
+Generally the computation of the optimal cost-to-go functions J*k can be
+very time-consuming or impossible. One of the principal RL methods to
+deal with this difficulty is approximation in value space. Here
+approximations J̃ₖ are used in place of J*k, similar to the deterministic
+case; cf. Eqs. (1.8) and (1.11).
+
+Approximation in Value Space — Use of J̃ₖ in Place of J*k
+
+At any state xₖ encountered at stage k, set
+
+μ̃ₖ(xₖ) ∈ arg min_{uₖ ∈ Uₖ(xₖ)}
+    E_wₖ{gₖ(xₖ, uₖ, wₖ) + J̃ₖ₊₁(fₖ(xₖ, uₖ, wₖ))}.          (1.21)
+
+The one-step lookahead minimization (1.21) needs to be performed
+only for the N states x₀, . . . , xN−1 that are encountered during the
+on-line control of the system. By contrast, exact DP requires that this
+type of minimization be done for every state and stage.
+
+The Three Approximations
+
+When designing approximation in value space schemes, one may consider
+several interesting simplification ideas, which are aimed at alleviating the
+computational overhead. Aside from cost function approximation (use
+J̃ₖ₊₁ in place of J*ₖ₊₁), there are other possibilities. One of them is to
+simplify the lookahead minimization over uₖ ∈ Uₖ(xₖ) [cf. Eq. (1.15)] by
+replacing Uₖ(xₖ) with a suitably chosen subset of controls that are viewed
+as most promising based on some heuristic criterion.
+
+In Section 1.6.7, we will discuss a related idea for control space
+simplification for the multiagent case where the control consists of
+multiple components, uₖ = (uₖ¹, . . . , uₖᵐ). Then, a sequence of m single
+component minimizations can be used instead, with potentially enormous
+computational savings resulting.
+
+Another type of simplification relates to approximations in the
+computation of the expected value in Eq. (1.21) by using limited Monte
+Carlo simulation. The Monte Carlo Tree Search method, which will be
+discussed in Chapter 2, Section 2.7.5, is one possibility of this type.
+
+Still another type of expected value simplification is based on the
+certainty equivalence approach, to be discussed in more detail in Chapter
+2, Section 2.7.2. In this approach, at stage k, we replace the future
+random variables wₖ₊₁, . . . , wₖ₊ₘ by some deterministic values
+w̄ₖ₊₁, . . . , w̄ₖ₊ₘ, such as their expected values. We may also view this as
+a form of problem approximation, whereby for the purpose of computing
+J̃ₖ₊₁(xₖ₊₁), we “pretend” that the problem is deterministic, with the future
+random quantities replaced by deterministic typical values. This is one of
+the most effective techniques to make approximation in value space for
+stochastic problems computationally tractable, particularly when it is
+combined with multistep lookahead minimization, as we will discuss later.
+
+Figure 1.3.2 illustrates the three approximations involved in
+approximation in value space for stochastic problems: cost-to-go
+approximation, simplified minimization, and expected value
+approximation. They may be designed largely independently of each
+other, and may be implemented with a variety of methods. Much of the
+discussion in this book will revolve around different ways to organize
+these three approximations for both cases of one-step and multistep
+lookahead.
+
+As indicated in Fig. 1.3.2, an important approach for cost-to-go
+approximation is problem approximation, whereby the functions J̃ₖ₊₁ in
+Eq. (1.21) are obtained as the optimal or nearly optimal cost functions of
+a simplified optimization problem, which is more convenient for
+computation. Simplifications may include exploiting decomposable
+structure, ignoring various types of uncertainties, and reducing the size
+of the state space. Several types of problem approximation approaches
+are discussed in the author’s RL book [Ber19a]. A major approach is
+aggregation, which will be discussed in Section 3.6. In this book, problem
+approximation will not receive much attention, despite the fact that it can
+often be combined very effectively with the approximation in value space
+methodology that is our main focus.
+
+Another important approach for on-line cost-to-go approximation is
+rollout, which we discuss next. This is similar to the rollout approach for
+deterministic problems, discussed in Section 1.2.
+
+Rollout for Stochastic Problems — Truncated Rollout
+
+In the rollout approach, we select J̃ₖ₊₁ in Eq. (1.21) to be the cost
+function of a suitable base policy (perhaps with some approximation).
+Note that
+
+[PDF page 5 — printed page 35]
+
+Sec. 1.3    Stochastic Dynamic Programming
+
+any policy can be used on-line as base policy, including policies obtained
+by a sophisticated off-line procedure, using for example neural networks
+and training data. The rollout algorithm has a cost improvement
+property, whereby it yields an improved cost relative to its underlying
+base policy. We will discuss this property and some conditions under
+which it is guaranteed to hold in Chapter 2.
+
+A major variant of rollout is truncated rollout, which combines the use
+of one-step optimization, simulation of the base policy for a certain
+number of steps m, and then adds an approximate cost
+J̃ₖ₊ₘ₊₁(xₖ₊ₘ₊₁) to the cost of the simulation, which depends on the state
+xₖ₊ₘ₊₁ obtained at the end of the rollout. Note that if one foregoes the use
+of a base policy (i.e., m = 0), one recovers as a special case the general
+approximation in value space scheme (1.21); see Fig. 1.3.3. Thus rollout
+provides an extra layer of lookahead to the one-step minimization, but
+this lookahead need not extend to the end of the horizon.
+
+Note also that versions of truncated rollout with multistep lookahead
+minimization are possible. They will be discussed later. The terminal cost
+approximation is necessary in infinite horizon problems, since an infinite
+number of stages of the base policy rollout is impossible. However, even
+for finite horizon problems it may be necessary and/or beneficial to
+artificially truncate the rollout horizon. Generally, a large combined
+number of multistep lookahead minimization and rollout steps is likely to
+be beneficial.
+
+Cost Versus Q-Factor Approximations — Robustness and On-Line
+Replanning
+
+Similar to the deterministic case, Q-learning involves the calculation of
+either the optimal Q-factors (1.20) or approximations Q̃ₖ(xₖ, uₖ). The
+
+[PDF page 6 — printed page 36]
+
+Exact and Approximate Dynamic Programming    Chap. 1
+
+Figure 1.3.2 diagram labels:
+Approximate Min
+Approximate
+Parametric approximation
+Neural nets
+Discretization
+Multiagent Steps
+“Future”
+Q-factor minimization
+First Step
+Steps
+“Future”
+At xₖ
+min_{uₖ} E{gₖ(xₖ, uₖ, wₖ) + J̃ₖ₊₁(xₖ₊₁)}
+{·}
+Approximate Cost-to-Go J̃ₖ₊₁
+Simple choices
+Parametric approximation
+Problem approximation
+Rollout, Model Predictive Control
+Certainty equivalence
+Monte Carlo tree search
+Aggregation
+Adaptive simulation
+Simple choices
+Tree Search approximation
+Problem approximation
+Parametric
+Certainty equivalence
+Monte Carlo tree search
+Neural nets
+Aggregation
+
+Figure 1.3.2 Schematic illustration of approximation in value space for
+stochastic problems, and the three approximations involved in its design.
+Typically the approximations can be designed independently of each
+other, and with a variety of approaches. There are also multistep
+lookahead versions of approximation in value space, which will be
+discussed later.
+
+[PDF page 7 — printed page 37]
+
+Sec. 1.3    Stochastic Dynamic Programming
+
+Figure 1.3.3 diagram labels:
+Possible States xₖ₊₁
+xₖ
+uₖ, wₖ
+Rollout with Base Policy
+m-Step Truncated Horizon
+Possible States xₖ₊ₘ₊₁
+Terminal Cost Approximation for Stages Beyond Truncation
+
+Figure 1.3.3 Schematic illustration of truncated rollout. One-step
+lookahead is followed by simulation of the base policy for m steps, and
+an approximate cost J̃ₖ₊ₘ₊₁(xₖ₊ₘ₊₁) is added to the cost of the simulation,
+which depends on the state xₖ₊ₘ₊₁ obtained at the end of the rollout. If
+the base policy simulation is omitted (i.e., m = 0), one recovers the general
+approximation in value space scheme (1.21). Truncated rollout with
+multistep lookahead is also possible and is discussed in some detail in
+Chapter 2.
+
+The approximate Q-factors may be obtained using approximation in
+value space schemes, and can be used to obtain approximately optimal
+policies through the Q-factor minimization
+
+μ̃ₖ(xₖ) ∈ arg min_{uₖ ∈ Uₖ(xₖ)} Q̃ₖ(xₖ, uₖ).                 (1.22)
+
+Since it is possible to implement approximation in value space by using
+cost function approximations [cf. Eq. (1.21)] or by using Q-factor
+approximations [cf. Eq. (1.22)], the question arises which one to use in a
+given practical situation. One important consideration is the facility of
+obtaining suitable cost or Q-factor approximations. This depends largely
+on the problem and also on the availability of data on which the
+approximations can be based. However, there are some other major
+considerations.
+
+In particular, the cost function approximation scheme
+
+μ̃ₖ(xₖ) ∈ arg min_{uₖ ∈ Uₖ(xₖ)}
+    E_wₖ{gₖ(xₖ, uₖ, wₖ) + J̃ₖ₊₁(fₖ(xₖ, uₖ, wₖ))},            (1.23)
+
+has an important disadvantage: the expected value above needs to be
+computed on-line for all uₖ ∈ Uₖ(xₖ), and this may involve substantial
+computation. It also has an important advantage in situations where the
+system function fₖ, the cost per stage gₖ, or the control constraint set
+Uₖ(xₖ) can change as the system is operating. Assuming that the new fₖ,
+gₖ, or Uₖ(xₖ) become known to the controller at time k, on-line replanning
+may be used, and this may improve substantially the robustness of the
+approximation in
+
+[PDF page 8 — printed page 38]
+
+Exact and Approximate Dynamic Programming    Chap. 1
+
+value space scheme. By comparison, the Q-factor function approximation
+scheme (1.22) does not allow for on-line replanning. On the other hand,
+for problems where there is no need for on-line replanning, the Q-factor
+approximation scheme may not require the on-line computation of
+expected values and may allow a much faster on-line computation of the
+minimizing control μ̃ₖ(xₖ) via Eq. (1.22).
+
+One more disadvantage of using Q-factors will emerge later, as we
+discuss the synergy between off-line training and on-line play based on
+Newton’s method; see Section 1.5. In particular, we will interpret the
+cost function of the lookahead minimization policy
+{μ̃₀, . . . , μ̃N−1} as the result of one step of Newton’s method for solving
+the Bellman equation that underlies the DP problem, starting from the
+terminal cost function approximations {J̃₁, . . . , J̃N}. This synergy tends
+to be negatively affected when Q-factor (rather than cost)
+approximations are used.
+
+1.3.3 Approximation in Policy Space
+
+The major alternative to approximation in value space is approximation
+in policy space, whereby we select the policy from a suitably restricted
+class of policies, usually a parametric class of some form. In particular,
+we can introduce a parametric family of policies (or approximation
+architecture, as we will call it in Chapter 3),
+
+μ̃ₖ(xₖ, rₖ),    k = 0, . . . , N − 1,
+
+where rₖ is a parameter, and then estimate the parameters rₖ using some
+type of training process or optimization; cf. Fig. 1.3.4.
+
+In this section and throughout this book, we focus on selecting a policy
+off-line, possibly through training with off-line-collected data. There are
+algorithms that aim to improve parametric policies by using data that is
+collected on-line, but this subject is beyond our scope (see also the
+relevant discussion on policy gradient methods in Chapter 3).
+
+Neural networks, described in Chapter 3, are often used to generate the
+parametric class of policies, in which case rₖ is the vector of
+weights/parameters of the neural network. In Chapter 3, we will also
+discuss methods for obtaining the training data required for obtaining
+the parameters rₖ, and we will consider several other classes of
+approximation architectures.
+
+A general scheme for parametric approximation in policy space is to
+somehow obtain a training set, consisting of a large number of sample
+state-control pairs
+
+(xₖˢ, uₖˢ), s = 1, . . . , q,
+
+such that for each s, uₖˢ is a “good” control at state xₖˢ. We can then
+choose the parameter rₖ by solving the least squares/regression problem
+
+min_{rₖ} ∑ₛ₌₁ᵠ ‖uₖˢ − μ̃ₖ(xₖˢ, rₖ)‖².                    (1.24)
+
+[PDF page 9 — printed page 39]
+
+Sec. 1.3    Stochastic Dynamic Programming
+
+Figure 1.3.4 diagram labels:
+Control
+uₖ = μ̃ₖ(xₖ, rₖ)
+System Environment
+State xₖ
+Controller
+μ̃ₖ(·, rₖ)
+Training Data
+
+Figure 1.3.4 Schematic illustration of parametric approximation in
+policy space. A policy
+
+μ̃ₖ(xₖ, rₖ),    k = 0, 1, . . . , N − 1,
+
+from a parametric class is computed off-line based on data, and it is used
+to generate the control uₖ = μ̃ₖ(xₖ, rₖ) on-line, when at state xₖ.
+
+(possibly modified to add regularization).† In particular, we may
+determine uₖˢ using a human or a software “expert” that can choose
+“near-optimal” controls at given states, so μ̃ₖ is trained to match the
+behavior of the expert. Methods of this type are commonly referred to as
+supervised learning in AI.
+
+An important approach for generating the training set (xₖˢ, uₖˢ),
+s = 1, . . . , q, for the least squares training problem (1.24) is based on
+approximation in value space. In particular, we may use a one-step
+lookahead minimization of the form
+
+uₖˢ ∈ arg min_{u ∈ Uₖ(xₖˢ)}
+    E{gₖ(xₖˢ, u, wₖ) + J̃ₖ₊₁(fₖ(xₖˢ, u, wₖ))}.
+
+† Here ‖·‖ denotes the standard quadratic Euclidean norm. It is
+implicitly assumed here (and in similar situations later) that the controls
+are members of a Euclidean space (i.e., the space of finite-dimensional
+vectors with real-valued components) so that the distance between two
+controls can be measured by their normed difference (randomized
+controls, i.e., probabilities that a particular action will be used, fall in
+this category). Regression problems of this type arise in the training of
+parametric classifiers based on data, including the use of neural networks
+(see Section 3.4). Assuming a finite control space, the classifier is trained
+using the data (xₖˢ, uₖˢ), s = 1, . . . , q, which are viewed as
+state-category pairs, and then a state xₖ is classified as being of
+“category” μ̃ₖ(xₖ, rₖ). Parametric approximation architectures, and their
+training through the use of classification and regression techniques are
+described in Chapter 3. An important modification is to use regularized
+regression where a quadratic regularization term is added to the least
+squares objective. This term is a positive multiple of the squared
+deviation ‖r − r̂‖² of r from some initial guess r̂.
+
+[PDF page 10 — printed page 40]
+
+Exact and Approximate Dynamic Programming    Chap. 1
+
+where J̃ₖ₊₁ is a suitable (separately obtained) approximation in value
+space. Alternatively, we may use an approximate Q-factor based
+minimization
+
+uₖˢ ∈ arg min_{uₖ ∈ Uₖ(xₖˢ)} Q̃ₖ(xₖˢ, uₖ),
+
+where Q̃ₖ is a (separately obtained) Q-factor approximation. We may view
+this as approximation in policy space built on top of approximation in
+value space.
+
+There is a significant advantage of the least squares training procedure
+of Eq. (1.24), and more generally approximation in policy space: once
+the parametrized policy μ̃ₖ is obtained, the computation of controls
+
+uₖ = μ̃ₖ(xₖ, rₖ),    k = 0, . . . , N − 1,
+
+during on-line operation of the system is often much easier compared
+with the lookahead minimization (1.23). For this reason, one of the major
+uses of approximation in policy space is to provide an approximate
+implementation of a known policy (no matter how obtained) for the
+purpose of convenient on-line use. On the negative side, such an
+implementation is less well suited for on-line replanning.
+
+Model-Free Approximation in Policy Space
+
+There are also alternative optimization-based approaches for policy
+space approximation. The main idea is that once we use a vector
+(r₀, r₁, . . . , rN−1) to parametrize the policies π, the expected cost
+Jπ(x₀) is parametrized as well, and can be viewed as a function of
+(r₀, r₁, . . . , rN−1). We can then optimize this cost by using a
+gradient-like or random search method. This is a widely used approach
+for optimization in policy space, which will be discussed somewhat
+briefly in this book (see Section 3.5, and the RL book [Ber19a],
+Section 5.7).
+
+An interesting feature of this approach is that in principle it does not
+require a mathematical model of the system and the cost function; a
+computer simulator (or availability of the real system for
+experimentation) suffices instead. This is sometimes called a model-free
+implementation. The advisability of implementations of this type,
+particularly when they rely exclusively on simulation (i.e., without the
+use of any prior mathematical model knowledge), is a hotly debated and
+much contested issue; see for example the review paper by Alamir
+[Ala22].†
+
+† The term “model-free” can be confusing. In reality, there is always a
+model in DP/RL problem formulations. It is just a question of whether it
+is a mathematical model (i.e., based on equations), or a computer model
+(i.e., based on computer simulation or a trained neural network), or a
+hybrid model (i.e., one that relies both on mathematical equations and
+computer software).

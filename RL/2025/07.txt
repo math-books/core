@@ -1,0 +1,329 @@
+PAGE 61
+
+Sec. 1.5    Newton’s Method - Linear Quadratic Problems
+
+[Figure 1.5.2 labels]
+F_L(K) for L Corresponding to an Unstable and a Stable Policy
+Stable L: |a + bL| < 1
+Unstable L: |a + bL| > 1
+Riccati Operator
+State 1    State 2
+K*    K_L    K
+
+Figure 1.5.2 Illustration of the construction of the cost function of a linear policy μ(x) = Lx, which is stable, i.e., |a + bL| < 1. The cost function Jμ(x) has the form
+
+Jμ(x) = K_L x²,
+
+with K_L obtained as the unique solution of the linear equation K = F_L(K), where
+
+F_L(K) = (a + bL)²K + q + rL²,
+
+is the Riccati equation operator corresponding to μ(x) = Lx. If μ is not stable, i.e., |a + bL| ≥ 1, we have Jμ(x) = ∞ for all x ≠ 0, but the equation K = F_L(K) still has a solution that is of no interest within our context.
+
+[cf. Eq. (1.34)], restricted to quadratic functions of the form J(x) = Kx².
+
+We note, however, that Jμ(x) = K_L x² is the solution of the Riccati equation (1.50)–(1.51) only when μ(x) = Lx is stable. If μ is not stable, i.e., |a + bL| ≥ 1, then (since q > 0 and r > 0) we have Jμ(x) = ∞ for all x ≠ 0. Then, the Riccati equation (1.50)–(1.51) is still defined, but its solution is negative and is of no interest within our context.
+
+Value Iteration
+
+The VI algorithm for our linear quadratic problem is given by
+
+Jₖ₊₁(x) = minᵤ∈ℝ {qx² + ru² + Jₖ(ax + bu)}.
+
+When Jₖ is quadratic of the form Jₖ(x) = Kₖx² with Kₖ ≥ 0, it can be seen that the VI iterate Jₖ₊₁ is also quadratic of the form Jₖ₊₁(x) = Kₖ₊₁x²,
+
+
+PAGE 62
+
+Exact and Approximate Dynamic Programming    Chap. 1
+
+[Figure 1.5.3 labels]
+Kₖ₊₁
+Riccati Operator
+K
+0
+Kₖ    Kₖ₊₁    K*
+
+Figure 1.5.3 Graphical illustration of value iteration for the linear quadratic problem. It has the form Kₖ₊₁ = F(Kₖ), where F is the Riccati operator,
+
+F(K) = (a²rK)/(r + b²K) + q.
+
+The algorithm converges to K* starting from any K₀ ≥ 0.
+
+where
+
+Kₖ₊₁ = F(Kₖ),
+
+with F being the Riccati operator of Eq. (1.49). The algorithm is illustrated in Fig. 1.5.3. As can be seen from the figure, when starting from any K₀ ≥ 0, the algorithm generates a sequence {Kₖ} of nonnegative scalars that converges to K*.
+
+1.5.1 Visualizing Approximation in Value Space - Region of Stability
+
+The use of Riccati equations allows insightful visualization of approximation in value space. This visualization, although specialized to linear quadratic problems, is consistent with related visualizations for more general infinite horizon problems; this is a recurring theme in what follows. In particular, in the books [Ber20a] and [Ber22a], Bellman operators, which define the Bellman equations, are used in place of Riccati operators, which define the Riccati equations.
+
+In summary, we will aim to show that:
+
+(a) Approximation in value space with one-step lookahead can be viewed as a Newton step for solving the Bellman equation, and maps the
+
+
+PAGE 63
+
+Sec. 1.5    Newton’s Method - Linear Quadratic Problems
+
+[Figure 1.5.4 labels]
+ON-LINE PLAY
+Current Position
+States xₖ₊₁
+Quadratic Cost Approximation
+J̃(x) = K̃x²
+OFF-LINE TRAINING
+NEWTON STEP
+for solving the Bellman Eq. Kx² = F(K)x² or K = F(K)
+
+Figure 1.5.4 Illustration of the interpretation of approximation in value space with one-step lookahead as a Newton step that maps J̃ to the cost function Jμ̃ of the one-step lookahead policy.
+
+terminal cost function approximation J̃ to the cost function Jμ̃ of the one-step lookahead policy; see Fig. 1.5.4.
+
+(b) Approximation in value space with multistep lookahead and truncated rollout can be viewed as a Newton step for solving the Bellman equation, and maps the result of multiple VI iterations starting with the terminal cost function approximation J̃ to the cost function Jμ̃ of the multistep lookahead policy; see Fig. 1.5.5.
+
+Our derivation will be given for the one-dimensional linear quadratic problem, but applies far more generally. The reason is that the Bellman equation is valid universally in DP, and the corresponding Bellman operator has a concavity property that is well-suited for the application of Newton’s method; see the books [Ber20a] and [Ber22a], where the connection of approximation in value space with Newton’s method was first developed in detail.
+
+Let us consider one-step lookahead minimization with any terminal cost function approximation of the form J̃(x) = Kx², where K ≥ 0. We have derived the one-step lookahead policy μ_K(x) in Eqs. (1.47)–(1.48), by minimizing the right side of Bellman’s equation when J(x) = Kx²:
+
+minᵤ∈ℝ {qx² + ru² + K(ax + bu)²}.
+
+We can break this minimization into a sequence of two minimizations as
+
+
+PAGE 64
+
+Exact and Approximate Dynamic Programming    Chap. 1
+
+[Figure 1.5.5 labels]
+2-Step Lookahead Minimization
+ON-LINE PLAY
+Current Position
+States xₖ₊₁
+States xₖ₊₂
+Truncated Rollout
+Cost Approximation
+Quadratic Cost Approximation
+J̃(x) = K̃x²
+Linear Stable Policy
+OFF-LINE TRAINING
+NEWTON STEP for Bellman Eq.
+Value Iterations
+Enhancements to the Starting Point of Newton Step
+Effective Terminal Cost Approximation
+
+Figure 1.5.5 Illustration of the interpretation of approximation in value space with multistep lookahead and truncated rollout as a Newton step, which maps the result of multiple VI iterations starting with the terminal cost function approximation J̃ to the cost function Jμ̃ of the multistep lookahead policy.
+
+follows:
+
+F(K)x²
+= min_{L∈ℝ} min_{u=Lx} {qx² + ru² + K(ax + bu)²}
+= min_{L∈ℝ} {q + rL² + K(a + bL)²}x².
+
+From this equation, it follows that
+
+F(K) = min_{L∈ℝ} F_L(K),    (1.52)
+
+where the function F_L(K) is defined by
+
+F_L(K) = (a + bL)²K + q + rL².    (1.53)
+
+Figure 1.5.6 illustrates the relation (1.52)–(1.53), and shows how the graph of the Riccati operator F can be obtained as the lower envelope of the linear operators F_L, as L ranges over the real numbers.
+
+One-Step Lookahead Minimization and Newton’s Method
+
+Let us now fix the terminal cost function approximation to some K̃x², where K̃ ≥ 0, and consider the corresponding one-step lookahead policy,
+
+
+PAGE 65
+
+Sec. 1.5    Newton’s Method - Linear Quadratic Problems
+
+[Figure 1.5.6 labels]
+F_L(K) = (a + bL)²K + q + rL²
+Tangent Riccati Operator at K̃
+L̃ = −abK̃/(r + b²K̃)
+Riccati Operator
+F(K) = (a²rK)/(r + b²K) + q
+0    K̃    K*    K
+
+Figure 1.5.6 Illustration of how the graph of the Riccati operator F can be obtained as the lower envelope of the linear operators
+
+F_L(K) = (a + bL)²K + q + rL²,
+
+as L ranges over the real numbers. We have
+
+F(K) = min_{L∈ℝ} F_L(K);
+
+cf. Eq. (1.52). Moreover, for any fixed K̃, the scalar L̃ that attains the minimum is given by
+
+L̃ = −abK̃/(r + b²K̃)
+
+[cf. Eq. (1.48)], and is such that the line corresponding to the graph of F_L̃ is tangent to the graph of F at K̃, as shown in the figure.
+
+which we will denote by μ̃. Figure 1.5.7 illustrates the corresponding linear function F_L̃, and shows that its graph is a tangent line to the graph of F at the point K̃ [cf. Fig. 1.5.6 and Eq. (1.53)].
+
+Thus the function F_L̃ can be viewed as a linearization of F at the point K̃, and defines a linearized problem: to find a solution of the equation
+
+K = F_L̃(K) = q + rL̃² + K(a + bL̃)².
+
+The important point now is that the solution of this equation, denoted K_L̃, is the same as the one obtained from a single iteration of Newton’s method for solving the Riccati equation, starting from the point K̃. This is illustrated in Fig. 1.5.7, and is also justified analytically in Exercise 1.7.
+
+
+PAGE 66
+
+Exact and Approximate Dynamic Programming    Chap. 1
+
+[Figure 1.5.7 labels]
+L̃ = −abK̃/(r + b²K̃)
+F_L̃(K)
+F(K)
+K
+Newton Step
+0    K̃    K*    K_L̃
+
+Figure 1.5.7 Illustration of approximation in value space with one-step lookahead for the linear quadratic problem. Given a terminal cost approximation J̃(x) = K̃x², we compute the corresponding linear policy μ̃(x) = L̃x, where
+
+L̃ = −abK̃/(r + b²K̃),
+
+and the corresponding cost function K_L̃x², using the Newton step shown.
+
+To explain this connection, we note that the classical form of Newton’s method for solving a fixed point problem of the form y = T(y), where y is an n-dimensional vector, operates as follows: At the current iterate yₖ, we linearize T and find the solution yₖ₊₁ of the corresponding linear fixed point problem. Assuming T is differentiable, the linearization is obtained by using a first order Taylor expansion:
+
+yₖ₊₁ = T(yₖ) + (∂T(yₖ)/∂y)(yₖ₊₁ − yₖ),
+
+where ∂T(yₖ)/∂y is the n × n Jacobian matrix of T evaluated at the vector yₖ, as indicated in Fig. 1.5.7.
+
+The most commonly given convergence rate property of Newton’s method is quadratic convergence. It states that near the solution y*, we have
+
+‖yₖ₊₁ − y*‖ = O(‖yₖ − y*‖²),
+
+where ‖·‖ is the Euclidean norm, and holds assuming the Jacobian matrix exists and is Lipschitz continuous (see [Ber16], Section 1.4). There are extensions of Newton’s method that are based on solving a linearized
+
+
+PAGE 67
+
+Sec. 1.5    Newton’s Method - Linear Quadratic Problems
+
+[Figure 1.5.8 labels]
+F_L̃(K)
+L̃ = −abK₁/(r + b²K₁)
+F(K)
+Newton Step
+K̃    K₁    K*    K_L̃
+Starting point enhancement
+
+Figure 1.5.8 Illustration of approximation in value space with two-step lookahead for the linear quadratic problem. Starting with a terminal cost approximation J̃(x) = K̃x², we obtain K₁ using a single value iteration, thereby enhancing the starting point of the Newton step. We then compute the corresponding linear policy μ̃(x) = L̃x, where
+
+L̃ = −abK₁/(r + b²K₁)
+
+and the corresponding cost function K_L̃x², using the Newton step shown. The figure shows that for any K̃ ≥ 0, the corresponding ℓ-step lookahead policy will be stable for all ℓ larger than some threshold.
+
+system at the current iterate, but relax the differentiability requirement to piecewise differentiability, and/or component concavity, while maintaining either a quadratic or a similarly fast superlinear convergence property of the method; see the monograph [Ber22a] (Appendix A) and the paper [Ber22c], which also provide a convergence analysis.
+
+Note also that if the one-step lookahead policy is stable, i.e., |a + bL̃| < 1, then K_L̃ is the quadratic cost coefficient of its cost function, i.e.,
+
+Jμ̃(x) = K_L̃x².
+
+The reason is that Jμ̃ solves the Bellman equation for policy μ̃. On the other hand, if μ̃ is not stable, then in view of the positive definite quadratic cost per stage, we have Jμ̃(x) = ∞ for all x ≠ 0.
+
+Multistep Lookahead
+
+In the case of ℓ-step lookahead minimization, a similar Newton step interpretation is possible.
+
+
+PAGE 68
+
+Exact and Approximate Dynamic Programming    Chap. 1
+
+Riccati Equation Formulas for One-Dimensional Problems
+
+Riccati equation for minimization [cf. Eqs. (1.41) and (1.42)]
+
+K = F(K),    F(K) = (a²rK)/(r + b²K) + q.
+
+Riccati equation for a linear policy μ(x) = Lx
+
+K = F_L(K),    F_L(K) = (a + bL)²K + q + rL².
+
+Cost coefficient K_L of a stable linear policy μ(x) = Lx
+
+K_L = (q + rL²)/(1 − (a + bL)²).
+
+Linear coefficient L_K of the one-step lookahead linear policy μ_K for K in the region of stability [cf. Eq. (1.48)]
+
+L_K = arg min_L F_L(K) = −abK/(r + b²K).
+
+Quadratic cost coefficient K_L̃ of a one-step lookahead linear policy μ_K for K in the region of stability
+
+Obtained as the solution of the linearized Riccati equation
+
+K_L̃ = F_L_K(K_L̃),
+
+or equivalently by a Newton iteration starting from K.
+
+Instead of linearizing F at K̃, we linearize at
+
+K_{ℓ−1} = F^{ℓ−1}(K̃),
+
+i.e., the result of ℓ − 1 successive applications of F starting with K̃. Each application of F corresponds to a value iteration. Thus the effective starting point for the Newton step is F^{ℓ−1}(K̃). Figure 1.5.8 depicts the case ℓ = 2.
+
+Region of Stability
+
+It is also useful to define the region of stability as the set of K ≥ 0 such
+
+
+PAGE 69
+
+Sec. 1.5    Newton’s Method - Linear Quadratic Problems
+
+[Figure 1.5.9 labels]
+Unstable Policy
+Stable Policy
+Slope = 1
+Optimal Policy
+K_S
+K*
+Region of stability
+also
+Region of Convergence of Newton’s Method
+
+Figure 1.5.9 Illustration of the region of stability, i.e., the set of K ≥ 0 such that the one-step lookahead policy μ_K is stable. This is also the set of initial conditions for which Newton’s method converges to K* asymptotically.
+
+that
+
+|a + bL_K| < 1,
+
+where L_K is the linear coefficient of the one-step lookahead policy corresponding to K; cf. Eq. (1.48). The region of stability may also be viewed as the region of convergence of Newton’s method. It is the set of starting points K for which Newton’s method, applied to the Riccati equation K = F(K), converges to K* asymptotically, and with a quadratic convergence rate (asymptotically as K → K*). Note that for our one-dimensional problem, the region of stability is the interval (K_S, ∞) that is characterized by the single point K_S where F has derivative equal to 1; see Fig. 1.5.9.
+
+For multidimensional problems, the region of stability may not be characterized as easily. Still, however, it is generally true that the region of stability is enlarged as the length of the lookahead increases.
+
+Indeed, with increased lookahead, the effective starting point
+
+F^{ℓ−1}(K̃)
+
+is pushed more and more within the region of stability. In particular, for any given K̃ ≥ 0, the corresponding ℓ-step lookahead policy will be stable for all ℓ larger than some threshold; see Fig. 1.5.8. The book [Ber22a], Section 3.3, contains a broader discussion of the region of stability and the role of multistep lookahead in enhancing it; see also Exercises 1.8 and 1.9.
+
+
+PAGE 70
+
+Exact and Approximate Dynamic Programming    Chap. 1
+
+Newton Step Interpretation of Approximation in Value Space in General Infinite Horizon Problems
+
+The interpretation of approximation in value space as a Newton step, and related notions of stability that we have discussed in this section admit a broad generalization to the infinite horizon problems that we consider in this book and beyond. The key fact in this respect is that our DP problem formulation allows arbitrary state and control spaces, both discrete and continuous, and can be extended even further to general abstract models with a DP structure; see the abstract DP book [Ber22b].
+
+Within this context, the Riccati operator is replaced by an abstract Bellman operator, and valuable insight can be obtained from graphical interpretations of the Bellman equation, the VI and PI algorithms, one-step and multistep approximation in value space, the region of stability, and exceptional behavior; see the book [Ber22a] for an extensive discussion. Naturally, the graphical interpretations and visualizations are limited to one dimension. However, they provide insight, and motivate conjectures and mathematical analysis, much of which is given in the book [Ber20a].
+
+The Importance of the First Step in Multistep Lookahead
+
+The Newton step interpretation of approximation in value space leads to an important insight into the special character of the initial step in ℓ-step lookahead implementations. In particular, it is only the first step that acts as the Newton step, and needs to be implemented with precision; cf. Fig. 1.5.5. The subsequent ℓ − 1 steps are a sequence of value iterations starting with J̃ and only serve to enhance the quality of the starting point of the Newton step. As a result, their precise implementation is not critical, a major point in the narrative of the author’s book [Ber22a].
+
+This idea suggests that we can simplify (within reason) the lookahead steps after the first with small (if any) performance loss for the multistep lookahead policy. An important example of such a simplification is the use of certainty equivalence, which will be discussed later in various contexts (Sections 1.6.9, 2.7.2, 2.8.3). Other possibilities include the “pruning” of the lookahead tree after the first step; see Section 2.4. In practical terms, simplifications after the first step of the multistep lookahead can save a lot of on-line computation, which can be fruitfully invested in extending the length of the lookahead. This insight is supported by substantial computational experimentation, starting with the paper by Bertsekas and Castañon [BeC99], which verified the beneficial effect of using certainty equivalence after the first step.
+
+1.5.2 Rollout and Policy Iteration
+
+We will now consider the rollout algorithm for the linear quadratic problem, starting from a linear stable base policy μ. It generates the rollout policy
